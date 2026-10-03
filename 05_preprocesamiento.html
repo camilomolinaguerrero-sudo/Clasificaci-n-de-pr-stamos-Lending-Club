@@ -1,0 +1,1799 @@
+
+<!DOCTYPE html>
+
+
+<html lang="es" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>5. Preprocesamiento &#8212; Default en préstamos de Lending Club: scikit-learn frente a PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="_static/documentation_options.js?v=78d55cf8"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Haz clic para mostrar';</script>
+    <script>let toggleHintHide = 'Haz clic para ocultar';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/translations.js?v=d190bf04"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]]}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '05_preprocesamiento';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="next" title="6. Modelado con scikit-learn" href="06_modelado_sklearn.html" />
+    <link rel="prev" title="Resumen ejecutivo del EDA" href="04b_resumen_eda.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="es"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Saltar al contenido principal</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Volver arriba</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Advertencia de versión"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Navegación del sitio">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="En esta página">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Default en préstamos de Lending Club: scikit-learn frente a PySpark</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Default en préstamos de Lending Club: scikit-learn frente a PySpark
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Análisis exploratorio</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_carga_vision_general.html">1. Carga inicial y visión general</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_eda_univariado.html">2. Análisis unidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_eda_bivariado.html">3. Análisis bidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_valores_faltantes.html">4. Valores faltantes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04b_resumen_eda.html">Resumen ejecutivo del EDA</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocesamiento y modelado</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">5. Preprocesamiento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_modelado_sklearn.html">6. Modelado con scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_modelado_pyspark.html">7. Modelado con PySpark</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Evaluación y comparación</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="08_comparacion_estadistica.html">8. Comparación estadística de los modelos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_lime.html">9. Interpretabilidad con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_comparacion_resultados.html">10. Comparación de resultados</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_experimentos.html">11. Experimentos complementarios</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Discusión</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="12_reflexion_critica.html">12. Reflexión crítica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_referencias.html">Referencias</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/camilomolinaguerrero-sudo/Clasificaci-n-de-pr-stamos-Lending-Club" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Repositorio de origen"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Descarga esta pagina">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/05_preprocesamiento.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Descargar archivo fuente"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Imprimir en PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Modo de pantalla completa"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Tema" data-bs-title="Tema"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Claro"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Oscuro"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="Sistema"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>5. Preprocesamiento</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contenido </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-de-modelado">5.1 Base de modelado</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#particion-comun-80-20-estratificada">5.2 Partición común (80/20 estratificada)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preprocesamiento-con-scikit-learn">5.3 Preprocesamiento con scikit-learn</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preprocesamiento-con-pyspark">5.4 Preprocesamiento con PySpark</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#equivalencia-entre-entornos">5.5 Equivalencia entre entornos</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="preprocesamiento">
+<h1>5. Preprocesamiento<a class="headerlink" href="#preprocesamiento" title="Link to this heading">#</a></h1>
+<p>Sección 9.10.4.2 del enunciado. Este capítulo construye la <strong>partición común</strong> que comparten los
+dos entornos y aplica el mismo preprocesamiento con scikit-learn y con PySpark. Al final se
+comprueba, con estadísticos agregados, que ambos entornos producen la misma matriz de diseño.</p>
+<p>Las reglas de construcción de variables están en <code class="docutils literal notranslate"><span class="pre">src/features.py</span></code>, escritas dos veces (pandas y
+PySpark) una junto a la otra. Se distinguen dos tipos de transformación:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tipo</p></th>
+<th class="head"><p>Transformaciones</p></th>
+<th class="head"><p>Cuándo se aplican</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Deterministas, fila a fila</p></td>
+<td><p>conversión de tipos, <code class="docutils literal notranslate"><span class="pre">dti</span></code> fuera de [0, 100] a faltante, <code class="docutils literal notranslate"><span class="pre">log1p</span></code> de <code class="docutils literal notranslate"><span class="pre">annual_inc</span></code>, <code class="docutils literal notranslate"><span class="pre">total_rev_hi_lim</span></code> y <code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code>, indicadores de faltante, unificación de <code class="docutils literal notranslate"><span class="pre">ANY</span></code>/<code class="docutils literal notranslate"><span class="pre">NONE</span></code>/<code class="docutils literal notranslate"><span class="pre">OTHER</span></code></p></td>
+<td><p>antes de la partición: no aprenden nada de los datos</p></td>
+</tr>
+<tr class="row-odd"><td><p>Aprendidas</p></td>
+<td><p>categorías con menos de 1 % agrupadas, mediana de imputación, media y desviación del escalado, categorías del one-hot</p></td>
+<td><p>se ajustan <strong>solo con entrenamiento</strong> y se aplican a prueba</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"../src"</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">features</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fe</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">"display.max_columns"</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="s2">"display.width"</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="s2">"display.max_rows"</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">tiempos</span> <span class="o">=</span> <span class="p">{}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="base-de-modelado">
+<h2>5.1 Base de modelado<a class="headerlink" href="#base-de-modelado" title="Link to this heading">#</a></h2>
+<p>Se parte del archivo intermedio del capítulo 1 (1.348.059 préstamos cerrados) y se construyen las
+30 variables seleccionadas en el EDA: 20 numéricas, 4 indicadores binarios y 6 categóricas.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">base</span> <span class="o">=</span> <span class="n">fe</span><span class="o">.</span><span class="n">base_pandas</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">cargar_prestamos</span><span class="p">())</span>
+<span class="n">base</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">MODELO</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">tiempos</span><span class="p">[</span><span class="s2">"base_pandas_s"</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Base de modelado: </span><span class="si">{</span><span class="n">base</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> filas x </span><span class="si">{</span><span class="n">base</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columnas "</span>
+      <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">tiempos</span><span class="p">[</span><span class="s1">'base_pandas_s'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Numéricas:"</span><span class="p">,</span> <span class="n">fe</span><span class="o">.</span><span class="n">NUM</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Indicadores:"</span><span class="p">,</span> <span class="n">fe</span><span class="o">.</span><span class="n">IND</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Categóricas:"</span><span class="p">,</span> <span class="n">fe</span><span class="o">.</span><span class="n">CAT</span><span class="p">)</span>
+<span class="n">base</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Base de modelado: 1,348,059 filas x 32 columnas (2.2 s)
+Numéricas: ['loan_amnt', 'term', 'int_rate', 'emp_length', 'annual_inc', 'dti', 'fico_range_high', 'delinq_2yrs', 'inq_last_6mths', 'open_acc', 'pub_rec', 'revol_util', 'mort_acc', 'pub_rec_bankruptcies', 'acc_open_past_24mths', 'num_actv_rev_tl', 'total_rev_hi_lim', 'avg_cur_bal', 'mths_since_recent_inq', 'antig_credito_meses']
+Indicadores: ['hist_morosidad', 'emp_length_faltante', 'consulta_faltante', 'buro_faltante']
+Categóricas: ['purpose', 'home_ownership', 'addr_state', 'verification_status', 'application_type', 'initial_list_status']
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>default</th>
+      <th>loan_amnt</th>
+      <th>term</th>
+      <th>int_rate</th>
+      <th>emp_length</th>
+      <th>annual_inc</th>
+      <th>dti</th>
+      <th>fico_range_high</th>
+      <th>delinq_2yrs</th>
+      <th>inq_last_6mths</th>
+      <th>open_acc</th>
+      <th>pub_rec</th>
+      <th>revol_util</th>
+      <th>mort_acc</th>
+      <th>...</th>
+      <th>num_actv_rev_tl</th>
+      <th>total_rev_hi_lim</th>
+      <th>avg_cur_bal</th>
+      <th>mths_since_recent_inq</th>
+      <th>antig_credito_meses</th>
+      <th>hist_morosidad</th>
+      <th>emp_length_faltante</th>
+      <th>consulta_faltante</th>
+      <th>buro_faltante</th>
+      <th>purpose</th>
+      <th>home_ownership</th>
+      <th>addr_state</th>
+      <th>verification_status</th>
+      <th>application_type</th>
+      <th>initial_list_status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>68407277</td>
+      <td>0</td>
+      <td>3600.0</td>
+      <td>36.0</td>
+      <td>13.99</td>
+      <td>10.0</td>
+      <td>10.915107</td>
+      <td>5.91</td>
+      <td>679.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>7.0</td>
+      <td>0.0</td>
+      <td>29.7</td>
+      <td>1.0</td>
+      <td>...</td>
+      <td>4.0</td>
+      <td>9.137877</td>
+      <td>9.937986</td>
+      <td>4.0</td>
+      <td>148.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>debt_consolidation</td>
+      <td>MORTGAGE</td>
+      <td>PA</td>
+      <td>Not Verified</td>
+      <td>Individual</td>
+      <td>w</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>68355089</td>
+      <td>0</td>
+      <td>24700.0</td>
+      <td>36.0</td>
+      <td>11.99</td>
+      <td>10.0</td>
+      <td>11.082158</td>
+      <td>16.06</td>
+      <td>719.0</td>
+      <td>1.0</td>
+      <td>4.0</td>
+      <td>22.0</td>
+      <td>0.0</td>
+      <td>19.2</td>
+      <td>4.0</td>
+      <td>...</td>
+      <td>5.0</td>
+      <td>11.624476</td>
+      <td>9.183380</td>
+      <td>0.0</td>
+      <td>192.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>small_business</td>
+      <td>MORTGAGE</td>
+      <td>SD</td>
+      <td>Not Verified</td>
+      <td>Individual</td>
+      <td>w</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>68341763</td>
+      <td>0</td>
+      <td>20000.0</td>
+      <td>60.0</td>
+      <td>10.78</td>
+      <td>10.0</td>
+      <td>11.050906</td>
+      <td>10.78</td>
+      <td>699.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>6.0</td>
+      <td>0.0</td>
+      <td>56.2</td>
+      <td>5.0</td>
+      <td>...</td>
+      <td>3.0</td>
+      <td>9.546884</td>
+      <td>10.361482</td>
+      <td>10.0</td>
+      <td>184.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>home_improvement</td>
+      <td>MORTGAGE</td>
+      <td>IL</td>
+      <td>Not Verified</td>
+      <td>Joint App</td>
+      <td>w</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>68476807</td>
+      <td>0</td>
+      <td>10400.0</td>
+      <td>60.0</td>
+      <td>22.45</td>
+      <td>3.0</td>
+      <td>11.556311</td>
+      <td>25.37</td>
+      <td>699.0</td>
+      <td>1.0</td>
+      <td>3.0</td>
+      <td>12.0</td>
+      <td>0.0</td>
+      <td>64.5</td>
+      <td>6.0</td>
+      <td>...</td>
+      <td>6.0</td>
+      <td>10.434145</td>
+      <td>10.227200</td>
+      <td>1.0</td>
+      <td>210.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>major_purchase</td>
+      <td>MORTGAGE</td>
+      <td>PA</td>
+      <td>Source Verified</td>
+      <td>Individual</td>
+      <td>w</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>68426831</td>
+      <td>0</td>
+      <td>11950.0</td>
+      <td>36.0</td>
+      <td>13.44</td>
+      <td>4.0</td>
+      <td>10.434145</td>
+      <td>10.20</td>
+      <td>694.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>68.4</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>3.0</td>
+      <td>9.465060</td>
+      <td>7.848153</td>
+      <td>NaN</td>
+      <td>338.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>debt_consolidation</td>
+      <td>RENT</td>
+      <td>GA</td>
+      <td>Source Verified</td>
+      <td>Individual</td>
+      <td>w</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 32 columns</p>
+</div></div></div>
+</div>
+</section>
+<section id="particion-comun-80-20-estratificada">
+<h2>5.2 Partición común (80/20 estratificada)<a class="headerlink" href="#particion-comun-80-20-estratificada" title="Link to this heading">#</a></h2>
+<p>La prueba de DeLong compara AUC calculados sobre <strong>las mismas observaciones</strong>, así que la
+partición se define una sola vez, con semilla 42 y estratificada por <code class="docutils literal notranslate"><span class="pre">default</span></code>, y se guarda en
+<code class="docutils literal notranslate"><span class="pre">data/processed/particion.parquet</span></code> con las columnas <code class="docutils literal notranslate"><span class="pre">id</span></code> y <code class="docutils literal notranslate"><span class="pre">split</span></code>. scikit-learn y PySpark leen
+ese archivo; PySpark no usa <code class="docutils literal notranslate"><span class="pre">randomSplit</span></code>, que no reproduciría la partición.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">id_tr</span><span class="p">,</span> <span class="n">id_te</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">base</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">base</span><span class="p">[</span><span class="s2">"default"</span><span class="p">],</span>
+                                <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">)</span>
+<span class="n">particion</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"id"</span><span class="p">:</span> <span class="n">id_tr</span><span class="p">,</span> <span class="s2">"split"</span><span class="p">:</span> <span class="s2">"train"</span><span class="p">}),</span>
+                       <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"id"</span><span class="p">:</span> <span class="n">id_te</span><span class="p">,</span> <span class="s2">"split"</span><span class="p">:</span> <span class="s2">"test"</span><span class="p">})])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"id"</span><span class="p">)</span>
+<span class="n">particion</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">PARTICION</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">resumen</span> <span class="o">=</span> <span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">particion</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">"id"</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"split"</span><span class="p">)[</span><span class="s2">"default"</span><span class="p">]</span>
+           <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">filas</span><span class="o">=</span><span class="s2">"size"</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="s2">"sum"</span><span class="p">,</span> <span class="n">tasa_default</span><span class="o">=</span><span class="s2">"mean"</span><span class="p">))</span>
+<span class="n">resumen</span><span class="p">[</span><span class="s2">"tasa_default"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">resumen</span><span class="p">[</span><span class="s2">"tasa_default"</span><span class="p">])</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"id único en la partición:"</span><span class="p">,</span> <span class="n">particion</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span><span class="o">.</span><span class="n">is_unique</span><span class="p">,</span> <span class="s2">"| filas:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">particion</span><span class="p">))</span>
+<span class="n">resumen</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>id único en la partición: True | filas: 1348059
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>filas</th>
+      <th>defaults</th>
+      <th>tasa_default</th>
+    </tr>
+    <tr>
+      <th>split</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>test</th>
+      <td>269612</td>
+      <td>53864</td>
+      <td>19.978</td>
+    </tr>
+    <tr>
+      <th>train</th>
+      <td>1078447</td>
+      <td>215456</td>
+      <td>19.978</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>La tasa de default es la misma en ambos conjuntos hasta el tercer decimal, como garantiza la
+estratificación. El conjunto de prueba tiene 269.612 préstamos, de los cuales 53.864 son
+defaults: sobre él se calculan todas las métricas y pruebas de los capítulos 6 a 9.</p>
+</section>
+<section id="preprocesamiento-con-scikit-learn">
+<h2>5.3 Preprocesamiento con scikit-learn<a class="headerlink" href="#preprocesamiento-con-scikit-learn" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>Lectura de la base y de la partición; separación en entrenamiento y prueba.</p></li>
+<li><p>Agrupación de categorías raras aprendida en entrenamiento: en <code class="docutils literal notranslate"><span class="pre">purpose</span></code> las categorías con
+menos de 1 % pasan a <code class="docutils literal notranslate"><span class="pre">other</span></code> y en <code class="docutils literal notranslate"><span class="pre">addr_state</span></code> a <code class="docutils literal notranslate"><span class="pre">OTROS</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ColumnTransformer</span></code> ajustado solo con entrenamiento:</p>
+<ul class="simple">
+<li><p>bloque numérico (20 variables + 4 indicadores): <code class="docutils literal notranslate"><span class="pre">SimpleImputer(strategy=&quot;median&quot;)</span></code> seguido
+de <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code>. El escalado es necesario para la regresión logística y el SVM lineal,
+que penalizan coeficientes y son sensibles a la escala; a los árboles no les afecta, y se usa
+la misma matriz para los seis modelos para que la comparación sea limpia.</p></li>
+<li><p>bloque categórico: <code class="docutils literal notranslate"><span class="pre">OneHotEncoder(handle_unknown=&quot;ignore&quot;)</span></code>, que codifica como ceros una
+categoría nueva en prueba.</p></li>
+</ul>
+</li>
+</ol>
+<p>El enunciado pide <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> <strong>sin</strong> <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code>, así que el preprocesamiento se ajusta una vez
+con todo el conjunto de entrenamiento y la búsqueda trabaja sobre la matriz ya transformada. Esto
+introduce una fuga mínima dentro de la validación cruzada (la mediana y la escala de cada pliegue
+de validación se calcularon incluyendo sus filas); con 1,08 millones de filas el efecto sobre
+medianas, medias y desviaciones es despreciable, y PySpark sigue exactamente el mismo esquema.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">sk</span> <span class="o">=</span> <span class="n">fe</span><span class="o">.</span><span class="n">preparar_sklearn</span><span class="p">()</span>
+<span class="n">tiempos</span><span class="p">[</span><span class="s2">"preproc_sklearn_s"</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tiempo de preprocesamiento (lectura + ajuste + transformación): </span><span class="si">{</span><span class="n">tiempos</span><span class="p">[</span><span class="s1">'preproc_sklearn_s'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"X_train: </span><span class="si">{</span><span class="n">sk</span><span class="p">[</span><span class="s1">'X_train'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, X_test: </span><span class="si">{</span><span class="n">sk</span><span class="p">[</span><span class="s1">'X_test'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tasa de default: entrenamiento </span><span class="si">{</span><span class="n">sk</span><span class="p">[</span><span class="s1">'y_train'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, prueba </span><span class="si">{</span><span class="n">sk</span><span class="p">[</span><span class="s1">'y_test'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Categorías que se conservan (&gt;= 1 </span><span class="si">% e</span><span class="s2">n entrenamiento):"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sk</span><span class="p">[</span><span class="s2">"frecuentes"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Tiempo de preprocesamiento (lectura + ajuste + transformación): 3.6 s
+X_train: (1078447, 72), X_test: (269612, 72)
+Tasa de default: entrenamiento 0.1998, prueba 0.1998
+
+Categorías que se conservan (&gt;= 1 % en entrenamiento):
+  purpose (8): ['car', 'credit_card', 'debt_consolidation', 'home_improvement', 'major_purchase', 'medical', 'other', 'small_business']
+  addr_state (28): ['AL', 'AZ', 'CA', 'CO', 'CT', 'FL', 'GA', 'IL', 'IN', 'LA', 'MA', 'MD', 'MI', 'MN', 'MO', 'NC', 'NJ', 'NV', 'NY', 'OH', 'OR', 'PA', 'SC', 'TN', 'TX', 'VA', 'WA', 'WI']
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">num</span> <span class="o">=</span> <span class="n">sk</span><span class="p">[</span><span class="s2">"ct"</span><span class="p">]</span><span class="o">.</span><span class="n">named_transformers_</span><span class="p">[</span><span class="s2">"num"</span><span class="p">]</span>
+<span class="n">param_sk</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"mediana"</span><span class="p">:</span> <span class="n">num</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s2">"simpleimputer"</span><span class="p">]</span><span class="o">.</span><span class="n">statistics_</span><span class="p">,</span>
+                         <span class="s2">"media"</span><span class="p">:</span> <span class="n">num</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s2">"standardscaler"</span><span class="p">]</span><span class="o">.</span><span class="n">mean_</span><span class="p">,</span>
+                         <span class="s2">"desv_est"</span><span class="p">:</span> <span class="n">num</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s2">"standardscaler"</span><span class="p">]</span><span class="o">.</span><span class="n">scale_</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="n">fe</span><span class="o">.</span><span class="n">NUM_IND</span><span class="p">)</span>
+<span class="n">param_sk</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mediana</th>
+      <th>media</th>
+      <th>desv_est</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>loan_amnt</th>
+      <td>12000.0000</td>
+      <td>14411.8444</td>
+      <td>8719.6186</td>
+    </tr>
+    <tr>
+      <th>term</th>
+      <td>36.0000</td>
+      <td>41.7823</td>
+      <td>10.2635</td>
+    </tr>
+    <tr>
+      <th>int_rate</th>
+      <td>12.7400</td>
+      <td>13.2429</td>
+      <td>4.7687</td>
+    </tr>
+    <tr>
+      <th>emp_length</th>
+      <td>6.0000</td>
+      <td>5.9627</td>
+      <td>3.5822</td>
+    </tr>
+    <tr>
+      <th>annual_inc</th>
+      <td>11.0822</td>
+      <td>11.0817</td>
+      <td>0.5699</td>
+    </tr>
+    <tr>
+      <th>dti</th>
+      <td>17.6100</td>
+      <td>18.1774</td>
+      <td>8.6742</td>
+    </tr>
+    <tr>
+      <th>fico_range_high</th>
+      <td>694.0000</td>
+      <td>700.1649</td>
+      <td>31.8651</td>
+    </tr>
+    <tr>
+      <th>delinq_2yrs</th>
+      <td>0.0000</td>
+      <td>0.3176</td>
+      <td>0.8797</td>
+    </tr>
+    <tr>
+      <th>inq_last_6mths</th>
+      <td>0.0000</td>
+      <td>0.6621</td>
+      <td>0.9594</td>
+    </tr>
+    <tr>
+      <th>open_acc</th>
+      <td>11.0000</td>
+      <td>11.5882</td>
+      <td>5.4780</td>
+    </tr>
+    <tr>
+      <th>pub_rec</th>
+      <td>0.0000</td>
+      <td>0.2146</td>
+      <td>0.6023</td>
+    </tr>
+    <tr>
+      <th>revol_util</th>
+      <td>52.2000</td>
+      <td>51.8275</td>
+      <td>24.5320</td>
+    </tr>
+    <tr>
+      <th>mort_acc</th>
+      <td>1.0000</td>
+      <td>1.6454</td>
+      <td>1.9666</td>
+    </tr>
+    <tr>
+      <th>pub_rec_bankruptcies</th>
+      <td>0.0000</td>
+      <td>0.1341</td>
+      <td>0.3772</td>
+    </tr>
+    <tr>
+      <th>acc_open_past_24mths</th>
+      <td>4.0000</td>
+      <td>4.6656</td>
+      <td>3.1309</td>
+    </tr>
+    <tr>
+      <th>num_actv_rev_tl</th>
+      <td>5.0000</td>
+      <td>5.6076</td>
+      <td>3.2174</td>
+    </tr>
+    <tr>
+      <th>total_rev_hi_lim</th>
+      <td>10.0900</td>
+      <td>10.0635</td>
+      <td>0.8301</td>
+    </tr>
+    <tr>
+      <th>avg_cur_bal</th>
+      <td>8.9103</td>
+      <td>8.8987</td>
+      <td>1.1550</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_inq</th>
+      <td>5.0000</td>
+      <td>6.4883</td>
+      <td>5.4838</td>
+    </tr>
+    <tr>
+      <th>antig_credito_meses</th>
+      <td>177.0000</td>
+      <td>194.9472</td>
+      <td>90.0556</td>
+    </tr>
+    <tr>
+      <th>hist_morosidad</th>
+      <td>0.0000</td>
+      <td>0.4959</td>
+      <td>0.5000</td>
+    </tr>
+    <tr>
+      <th>emp_length_faltante</th>
+      <td>0.0000</td>
+      <td>0.0584</td>
+      <td>0.2345</td>
+    </tr>
+    <tr>
+      <th>consulta_faltante</th>
+      <td>0.0000</td>
+      <td>0.1312</td>
+      <td>0.3376</td>
+    </tr>
+    <tr>
+      <th>buro_faltante</th>
+      <td>0.0000</td>
+      <td>0.0523</td>
+      <td>0.2226</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</section>
+<section id="preprocesamiento-con-pyspark">
+<h2>5.4 Preprocesamiento con PySpark<a class="headerlink" href="#preprocesamiento-con-pyspark" title="Link to this heading">#</a></h2>
+<p>El flujo en Spark repite los mismos pasos sin sacar los datos de la JVM:</p>
+<ol class="arabic simple">
+<li><p>Lectura del CSV completo (<code class="docutils literal notranslate"><span class="pre">spark.read.csv</span></code>, todas las columnas como texto) y construcción de las
+variables con <code class="docutils literal notranslate"><span class="pre">fe.base_spark</span></code>, que replica las reglas de pandas con funciones de
+<code class="docutils literal notranslate"><span class="pre">pyspark.sql.functions</span></code>.</p></li>
+<li><p>Lectura de <code class="docutils literal notranslate"><span class="pre">particion.parquet</span></code> y unión por <code class="docutils literal notranslate"><span class="pre">id</span></code>; entrenamiento y prueba se separan con
+<code class="docutils literal notranslate"><span class="pre">filter(split</span> <span class="pre">==</span> <span class="pre">...)</span></code>.</p></li>
+<li><p>Agrupación de categorías raras con conteos de entrenamiento (<code class="docutils literal notranslate"><span class="pre">groupBy().count()</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> con <code class="docutils literal notranslate"><span class="pre">Imputer</span></code> (mediana exacta, <code class="docutils literal notranslate"><span class="pre">relativeError=0</span></code>), <code class="docutils literal notranslate"><span class="pre">VectorAssembler</span></code> +
+<code class="docutils literal notranslate"><span class="pre">StandardScaler(withMean=True,</span> <span class="pre">withStd=True)</span></code> para el bloque numérico, <code class="docutils literal notranslate"><span class="pre">StringIndexer</span></code> +
+<code class="docutils literal notranslate"><span class="pre">OneHotEncoder</span></code> para las categóricas y un <code class="docutils literal notranslate"><span class="pre">VectorAssembler</span></code> final. El <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> se ajusta solo
+con entrenamiento.</p></li>
+<li><p>El resultado (<code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">label</span></code>, <code class="docutils literal notranslate"><span class="pre">features</span></code>) se reparte en 40 particiones (4 por cada uno de los 10
+núcleos del equipo; las 400 particiones configuradas rigen las uniones y agregaciones; la
+justificación está en el capítulo 7) y se <strong>cachea</strong> con <code class="docutils literal notranslate"><span class="pre">persist(StorageLevel.MEMORY_AND_DISK)</span></code>
+antes de cualquier modelo, como exige el enunciado.</p></li>
+</ol>
+<p>No se usa <code class="docutils literal notranslate"><span class="pre">.toPandas()</span></code>, y <code class="docutils literal notranslate"><span class="pre">.collect()</span></code> y <code class="docutils literal notranslate"><span class="pre">.first()</span></code> solo se aplican a resultados ya agregados
+(conteos por categoría y estadísticos): al driver nunca llegan filas de datos.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">spark_utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">su</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark</span><span class="w"> </span><span class="kn">import</span> <span class="n">StorageLevel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.ml.stat</span><span class="w"> </span><span class="kn">import</span> <span class="n">Summarizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">sesion_spark</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Spark"</span><span class="p">,</span> <span class="n">spark</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="s2">"| configuración:"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">su</span><span class="o">.</span><span class="n">CONFIG_OBLIGATORIA</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">datos</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">preparar_spark</span><span class="p">(</span><span class="n">spark</span><span class="p">)</span>
+<span class="n">tiempos</span><span class="p">[</span><span class="s2">"preproc_spark_s"</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="n">train_s</span><span class="p">,</span> <span class="n">test_s</span> <span class="o">=</span> <span class="n">datos</span><span class="p">[</span><span class="s2">"train"</span><span class="p">],</span> <span class="n">datos</span><span class="p">[</span><span class="s2">"test"</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Tiempo de preprocesamiento en Spark (lectura del CSV + variables + unión + Pipeline + caché): "</span>
+      <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tiempos</span><span class="p">[</span><span class="s1">'preproc_spark_s'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Entrenamiento: </span><span class="si">{</span><span class="n">datos</span><span class="p">[</span><span class="s1">'n_train'</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> filas | prueba: </span><span class="si">{</span><span class="n">datos</span><span class="p">[</span><span class="s1">'n_test'</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> filas | "</span>
+      <span class="sa">f</span><span class="s2">"particiones: </span><span class="si">{</span><span class="n">train_s</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">getNumPartitions</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Dimensión del vector de características:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">datos</span><span class="p">[</span><span class="s2">"nombres"</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"¿Mismas categorías frecuentes que en pandas?"</span><span class="p">,</span> <span class="n">datos</span><span class="p">[</span><span class="s2">"frecuentes"</span><span class="p">]</span> <span class="o">==</span> <span class="n">sk</span><span class="p">[</span><span class="s2">"frecuentes"</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Spark 4.2.0 | configuración:
+  spark.sql.shuffle.partitions = 400
+  spark.default.parallelism = 400
+  spark.executor.memory = 8g
+  spark.driver.memory = 8g
+  spark.memory.fraction = 0.8
+  spark.memory.storageFraction = 0.3
+
+Tiempo de preprocesamiento en Spark (lectura del CSV + variables + unión + Pipeline + caché): 34.5 s
+Entrenamiento: 1,078,447 filas | prueba: 269,612 filas | particiones: 40
+Dimensión del vector de características: 72
+¿Mismas categorías frecuentes que en pandas? True
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="equivalencia-entre-entornos">
+<h2>5.5 Equivalencia entre entornos<a class="headerlink" href="#equivalencia-entre-entornos" title="Link to this heading">#</a></h2>
+<p>Se comparan tres niveles, siempre con agregados:</p>
+<ol class="arabic simple">
+<li><p><strong>Base sin codificar</strong>: número de valores no nulos y suma de cada variable numérica, y conteo
+por categoría, calculados en pandas y en Spark sobre las 1.348.059 filas.</p></li>
+<li><p><strong>Parámetros aprendidos</strong>: medianas, medias y desviaciones del escalado.</p></li>
+<li><p><strong>Matriz final de entrenamiento</strong>: media de cada una de las 72 columnas.</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_s</span> <span class="o">=</span> <span class="n">datos</span><span class="p">[</span><span class="s2">"base"</span><span class="p">]</span>
+<span class="n">agg_s</span> <span class="o">=</span> <span class="n">base_s</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fe</span><span class="o">.</span><span class="n">NUM_IND</span><span class="p">],</span>
+                   <span class="o">*</span><span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="sa">f</span><span class="s2">"s_</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fe</span><span class="o">.</span><span class="n">NUM_IND</span><span class="p">])</span><span class="o">.</span><span class="n">first</span><span class="p">()</span><span class="o">.</span><span class="n">asDict</span><span class="p">()</span>
+<span class="n">comp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">"no_nulos_pandas"</span><span class="p">:</span> <span class="n">base</span><span class="p">[</span><span class="n">fe</span><span class="o">.</span><span class="n">NUM_IND</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+    <span class="s2">"no_nulos_spark"</span><span class="p">:</span> <span class="p">[</span><span class="n">agg_s</span><span class="p">[</span><span class="sa">f</span><span class="s2">"n_</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fe</span><span class="o">.</span><span class="n">NUM_IND</span><span class="p">],</span>
+    <span class="s2">"suma_pandas"</span><span class="p">:</span> <span class="n">base</span><span class="p">[</span><span class="n">fe</span><span class="o">.</span><span class="n">NUM_IND</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+    <span class="s2">"suma_spark"</span><span class="p">:</span> <span class="p">[</span><span class="n">agg_s</span><span class="p">[</span><span class="sa">f</span><span class="s2">"s_</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fe</span><span class="o">.</span><span class="n">NUM_IND</span><span class="p">]})</span>
+<span class="n">comp</span><span class="p">[</span><span class="s2">"dif_relativa_suma"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">comp</span><span class="p">[</span><span class="s2">"suma_spark"</span><span class="p">]</span> <span class="o">-</span> <span class="n">comp</span><span class="p">[</span><span class="s2">"suma_pandas"</span><span class="p">])</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">/</span> <span class="n">comp</span><span class="p">[</span><span class="s2">"suma_pandas"</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Filas: pandas"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">base</span><span class="p">),</span> <span class="s2">"| Spark"</span><span class="p">,</span> <span class="n">datos</span><span class="p">[</span><span class="s2">"n_base"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Máxima diferencia en no nulos:"</span><span class="p">,</span> <span class="nb">int</span><span class="p">((</span><span class="n">comp</span><span class="p">[</span><span class="s2">"no_nulos_pandas"</span><span class="p">]</span> <span class="o">-</span> <span class="n">comp</span><span class="p">[</span><span class="s2">"no_nulos_spark"</span><span class="p">])</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Máxima diferencia relativa en sumas:"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">comp</span><span class="p">[</span><span class="s1">'dif_relativa_suma'</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">cat_ok</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span>
+    <span class="n">base</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="o">==</span> <span class="p">{</span><span class="n">r</span><span class="p">[</span><span class="n">c</span><span class="p">]:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"count"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">base_s</span><span class="o">.</span><span class="n">groupBy</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">collect</span><span class="p">()}</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fe</span><span class="o">.</span><span class="n">CAT</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Conteos por categoría idénticos:"</span><span class="p">,</span> <span class="n">cat_ok</span><span class="p">)</span>
+<span class="n">comp</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Filas: pandas 1348059 | Spark 1348059
+Máxima diferencia en no nulos: 0
+Máxima diferencia relativa en sumas: 1.20e-13
+Conteos por categoría idénticos: True
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>no_nulos_pandas</th>
+      <th>no_nulos_spark</th>
+      <th>suma_pandas</th>
+      <th>suma_spark</th>
+      <th>dif_relativa_suma</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>loan_amnt</th>
+      <td>1348059</td>
+      <td>1348059</td>
+      <td>1.942418e+10</td>
+      <td>1.942418e+10</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>term</th>
+      <td>1348059</td>
+      <td>1348059</td>
+      <td>5.632720e+07</td>
+      <td>5.632720e+07</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>int_rate</th>
+      <td>1348059</td>
+      <td>1348059</td>
+      <td>1.785029e+07</td>
+      <td>1.785029e+07</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>emp_length</th>
+      <td>1269514</td>
+      <td>1269514</td>
+      <td>7.568944e+06</td>
+      <td>7.568944e+06</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>annual_inc</th>
+      <td>1348055</td>
+      <td>1348055</td>
+      <td>1.493861e+07</td>
+      <td>1.493861e+07</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>dti</th>
+      <td>1347150</td>
+      <td>1347150</td>
+      <td>2.448609e+07</td>
+      <td>2.448609e+07</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>fico_range_high</th>
+      <td>1348059</td>
+      <td>1348059</td>
+      <td>9.438599e+08</td>
+      <td>9.438599e+08</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>delinq_2yrs</th>
+      <td>1348030</td>
+      <td>1348030</td>
+      <td>4.281820e+05</td>
+      <td>4.281820e+05</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>inq_last_6mths</th>
+      <td>1348029</td>
+      <td>1348029</td>
+      <td>8.926770e+05</td>
+      <td>8.926770e+05</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>open_acc</th>
+      <td>1348030</td>
+      <td>1348030</td>
+      <td>1.562428e+07</td>
+      <td>1.562428e+07</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>pub_rec</th>
+      <td>1348030</td>
+      <td>1348030</td>
+      <td>2.898910e+05</td>
+      <td>2.898910e+05</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>revol_util</th>
+      <td>1347162</td>
+      <td>1347162</td>
+      <td>6.979949e+07</td>
+      <td>6.979949e+07</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>mort_acc</th>
+      <td>1298029</td>
+      <td>1298029</td>
+      <td>2.168725e+06</td>
+      <td>2.168725e+06</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>pub_rec_bankruptcies</th>
+      <td>1346694</td>
+      <td>1346694</td>
+      <td>1.809450e+05</td>
+      <td>1.809450e+05</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>acc_open_past_24mths</th>
+      <td>1298029</td>
+      <td>1298029</td>
+      <td>6.091481e+06</td>
+      <td>6.091481e+06</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>num_actv_rev_tl</th>
+      <td>1277783</td>
+      <td>1277783</td>
+      <td>7.211145e+06</td>
+      <td>7.211145e+06</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>total_rev_hi_lim</th>
+      <td>1277783</td>
+      <td>1277783</td>
+      <td>1.285709e+07</td>
+      <td>1.285709e+07</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>avg_cur_bal</th>
+      <td>1277761</td>
+      <td>1277761</td>
+      <td>1.136911e+07</td>
+      <td>1.136911e+07</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_inq</th>
+      <td>1171239</td>
+      <td>1171239</td>
+      <td>7.862772e+06</td>
+      <td>7.862772e+06</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>antig_credito_meses</th>
+      <td>1348030</td>
+      <td>1348030</td>
+      <td>2.628747e+08</td>
+      <td>2.628747e+08</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>hist_morosidad</th>
+      <td>1348059</td>
+      <td>1348059</td>
+      <td>6.681170e+05</td>
+      <td>6.681170e+05</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>emp_length_faltante</th>
+      <td>1348059</td>
+      <td>1348059</td>
+      <td>7.854500e+04</td>
+      <td>7.854500e+04</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>consulta_faltante</th>
+      <td>1348059</td>
+      <td>1348059</td>
+      <td>1.768200e+05</td>
+      <td>1.768200e+05</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>buro_faltante</th>
+      <td>1348059</td>
+      <td>1348059</td>
+      <td>7.029800e+04</td>
+      <td>7.029800e+04</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">param_spark</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"mediana"</span><span class="p">:</span> <span class="n">datos</span><span class="p">[</span><span class="s2">"medianas"</span><span class="p">],</span> <span class="s2">"media"</span><span class="p">:</span> <span class="n">datos</span><span class="p">[</span><span class="s2">"medias"</span><span class="p">],</span>
+                            <span class="s2">"desv_est"</span><span class="p">:</span> <span class="n">datos</span><span class="p">[</span><span class="s2">"desv"</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="n">fe</span><span class="o">.</span><span class="n">NUM_IND</span><span class="p">)</span>
+<span class="n">dif</span> <span class="o">=</span> <span class="p">(</span><span class="n">param_spark</span> <span class="o">-</span> <span class="n">param_sk</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Máxima diferencia absoluta en medianas:"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">dif</span><span class="p">[</span><span class="s1">'mediana'</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Máxima diferencia absoluta en medias:  "</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">dif</span><span class="p">[</span><span class="s1">'media'</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Máxima diferencia relativa en desviaciones:"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="p">(</span><span class="n">dif</span><span class="p">[</span><span class="s1">'desv_est'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">param_sk</span><span class="p">[</span><span class="s1">'desv_est'</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">param_spark</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param_sk</span><span class="p">,</span> <span class="n">lsuffix</span><span class="o">=</span><span class="s2">"_spark"</span><span class="p">,</span> <span class="n">rsuffix</span><span class="o">=</span><span class="s2">"_sklearn"</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Máxima diferencia absoluta en medianas: 0.00e+00
+Máxima diferencia absoluta en medias:   3.64e-12
+Máxima diferencia relativa en desviaciones: 4.64e-07
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mediana_spark</th>
+      <th>media_spark</th>
+      <th>desv_est_spark</th>
+      <th>mediana_sklearn</th>
+      <th>media_sklearn</th>
+      <th>desv_est_sklearn</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>loan_amnt</th>
+      <td>12000.0000</td>
+      <td>14411.8444</td>
+      <td>8719.6227</td>
+      <td>12000.0000</td>
+      <td>14411.8444</td>
+      <td>8719.6186</td>
+    </tr>
+    <tr>
+      <th>term</th>
+      <td>36.0000</td>
+      <td>41.7823</td>
+      <td>10.2635</td>
+      <td>36.0000</td>
+      <td>41.7823</td>
+      <td>10.2635</td>
+    </tr>
+    <tr>
+      <th>int_rate</th>
+      <td>12.7400</td>
+      <td>13.2429</td>
+      <td>4.7687</td>
+      <td>12.7400</td>
+      <td>13.2429</td>
+      <td>4.7687</td>
+    </tr>
+    <tr>
+      <th>emp_length</th>
+      <td>6.0000</td>
+      <td>5.9627</td>
+      <td>3.5822</td>
+      <td>6.0000</td>
+      <td>5.9627</td>
+      <td>3.5822</td>
+    </tr>
+    <tr>
+      <th>annual_inc</th>
+      <td>11.0822</td>
+      <td>11.0817</td>
+      <td>0.5699</td>
+      <td>11.0822</td>
+      <td>11.0817</td>
+      <td>0.5699</td>
+    </tr>
+    <tr>
+      <th>dti</th>
+      <td>17.6100</td>
+      <td>18.1774</td>
+      <td>8.6742</td>
+      <td>17.6100</td>
+      <td>18.1774</td>
+      <td>8.6742</td>
+    </tr>
+    <tr>
+      <th>fico_range_high</th>
+      <td>694.0000</td>
+      <td>700.1649</td>
+      <td>31.8652</td>
+      <td>694.0000</td>
+      <td>700.1649</td>
+      <td>31.8651</td>
+    </tr>
+    <tr>
+      <th>delinq_2yrs</th>
+      <td>0.0000</td>
+      <td>0.3176</td>
+      <td>0.8797</td>
+      <td>0.0000</td>
+      <td>0.3176</td>
+      <td>0.8797</td>
+    </tr>
+    <tr>
+      <th>inq_last_6mths</th>
+      <td>0.0000</td>
+      <td>0.6621</td>
+      <td>0.9594</td>
+      <td>0.0000</td>
+      <td>0.6621</td>
+      <td>0.9594</td>
+    </tr>
+    <tr>
+      <th>open_acc</th>
+      <td>11.0000</td>
+      <td>11.5882</td>
+      <td>5.4780</td>
+      <td>11.0000</td>
+      <td>11.5882</td>
+      <td>5.4780</td>
+    </tr>
+    <tr>
+      <th>pub_rec</th>
+      <td>0.0000</td>
+      <td>0.2146</td>
+      <td>0.6023</td>
+      <td>0.0000</td>
+      <td>0.2146</td>
+      <td>0.6023</td>
+    </tr>
+    <tr>
+      <th>revol_util</th>
+      <td>52.2000</td>
+      <td>51.8275</td>
+      <td>24.5321</td>
+      <td>52.2000</td>
+      <td>51.8275</td>
+      <td>24.5320</td>
+    </tr>
+    <tr>
+      <th>mort_acc</th>
+      <td>1.0000</td>
+      <td>1.6454</td>
+      <td>1.9666</td>
+      <td>1.0000</td>
+      <td>1.6454</td>
+      <td>1.9666</td>
+    </tr>
+    <tr>
+      <th>pub_rec_bankruptcies</th>
+      <td>0.0000</td>
+      <td>0.1341</td>
+      <td>0.3772</td>
+      <td>0.0000</td>
+      <td>0.1341</td>
+      <td>0.3772</td>
+    </tr>
+    <tr>
+      <th>acc_open_past_24mths</th>
+      <td>4.0000</td>
+      <td>4.6656</td>
+      <td>3.1309</td>
+      <td>4.0000</td>
+      <td>4.6656</td>
+      <td>3.1309</td>
+    </tr>
+    <tr>
+      <th>num_actv_rev_tl</th>
+      <td>5.0000</td>
+      <td>5.6076</td>
+      <td>3.2174</td>
+      <td>5.0000</td>
+      <td>5.6076</td>
+      <td>3.2174</td>
+    </tr>
+    <tr>
+      <th>total_rev_hi_lim</th>
+      <td>10.0900</td>
+      <td>10.0635</td>
+      <td>0.8301</td>
+      <td>10.0900</td>
+      <td>10.0635</td>
+      <td>0.8301</td>
+    </tr>
+    <tr>
+      <th>avg_cur_bal</th>
+      <td>8.9103</td>
+      <td>8.8987</td>
+      <td>1.1550</td>
+      <td>8.9103</td>
+      <td>8.8987</td>
+      <td>1.1550</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_inq</th>
+      <td>5.0000</td>
+      <td>6.4883</td>
+      <td>5.4838</td>
+      <td>5.0000</td>
+      <td>6.4883</td>
+      <td>5.4838</td>
+    </tr>
+    <tr>
+      <th>antig_credito_meses</th>
+      <td>177.0000</td>
+      <td>194.9472</td>
+      <td>90.0556</td>
+      <td>177.0000</td>
+      <td>194.9472</td>
+      <td>90.0556</td>
+    </tr>
+    <tr>
+      <th>hist_morosidad</th>
+      <td>0.0000</td>
+      <td>0.4959</td>
+      <td>0.5000</td>
+      <td>0.0000</td>
+      <td>0.4959</td>
+      <td>0.5000</td>
+    </tr>
+    <tr>
+      <th>emp_length_faltante</th>
+      <td>0.0000</td>
+      <td>0.0584</td>
+      <td>0.2345</td>
+      <td>0.0000</td>
+      <td>0.0584</td>
+      <td>0.2345</td>
+    </tr>
+    <tr>
+      <th>consulta_faltante</th>
+      <td>0.0000</td>
+      <td>0.1312</td>
+      <td>0.3376</td>
+      <td>0.0000</td>
+      <td>0.1312</td>
+      <td>0.3376</td>
+    </tr>
+    <tr>
+      <th>buro_faltante</th>
+      <td>0.0000</td>
+      <td>0.0523</td>
+      <td>0.2226</td>
+      <td>0.0000</td>
+      <td>0.0523</td>
+      <td>0.2226</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Las desviaciones estándar difieren en menos de media parte por millón (diferencia relativa máxima
+de 4,6 × 10⁻⁷): <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> de scikit-learn usa
+la desviación poblacional (divide entre <span class="math notranslate nohighlight">\(n\)</span>) y el de Spark la muestral (divide entre <span class="math notranslate nohighlight">\(n-1\)</span>); con
+<span class="math notranslate nohighlight">\(n\)</span> = 1.078.447 el cociente es <span class="math notranslate nohighlight">\(\sqrt{n/(n-1)} \approx 1 + 4{,}6 \times 10^{-7}\)</span>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">medias_spark</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">train_s</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">Summarizer</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">"features"</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">"m"</span><span class="p">))</span><span class="o">.</span><span class="n">first</span><span class="p">()[</span><span class="s2">"m"</span><span class="p">])</span>
+<span class="n">medias_sk</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">sk</span><span class="p">[</span><span class="s2">"X_train"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">sk</span><span class="p">[</span><span class="s2">"nombres"</span><span class="p">])</span>
+<span class="c1"># Spark nombra las columnas one-hot como "&lt;var&gt;_ohe_&lt;categoría&gt;"; se alinean con las de sklearn</span>
+<span class="n">mapa</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"_ohe_"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)</span> <span class="k">if</span> <span class="s2">"_ohe_"</span> <span class="ow">in</span> <span class="n">n</span> <span class="k">else</span> <span class="n">fe</span><span class="o">.</span><span class="n">NUM_IND</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">datos</span><span class="p">[</span><span class="s2">"nombres"</span><span class="p">])}</span>
+<span class="n">medias_spark</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">medias_spark</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">mapa</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">datos</span><span class="p">[</span><span class="s2">"nombres"</span><span class="p">]])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Columnas: scikit-learn </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">medias_sk</span><span class="p">)</span><span class="si">}</span><span class="s2"> | Spark </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">medias_spark</span><span class="p">)</span><span class="si">}</span><span class="s2"> | "</span>
+      <span class="sa">f</span><span class="s2">"mismos nombres: </span><span class="si">{</span><span class="nb">set</span><span class="p">(</span><span class="n">medias_sk</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">set</span><span class="p">(</span><span class="n">medias_spark</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">alineado</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"sklearn"</span><span class="p">:</span> <span class="n">medias_sk</span><span class="p">,</span> <span class="s2">"spark"</span><span class="p">:</span> <span class="n">medias_spark</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">medias_sk</span><span class="o">.</span><span class="n">index</span><span class="p">)})</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Máxima diferencia absoluta entre medias de columnas:"</span><span class="p">,</span>
+      <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="p">(</span><span class="n">alineado</span><span class="p">[</span><span class="s1">'sklearn'</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">alineado</span><span class="p">[</span><span class="s1">'spark'</span><span class="p">])</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Columnas: scikit-learn 72 | Spark 72 | mismos nombres: True
+Máxima diferencia absoluta entre medias de columnas: 1.16e-12
+</pre></div>
+</div>
+</div>
+</div>
+<p>Las dos matrices de entrenamiento coinciden columna a columna: mismo número de filas, mismas 72
+columnas y medias iguales salvo por errores de redondeo (diferencia máxima de 10⁻¹²). Las únicas
+diferencias entre entornos son el nombre de las columnas one-hot (Spark las llama
+<code class="docutils literal notranslate"><span class="pre">&lt;variable&gt;_ohe_&lt;categoría&gt;</span></code> y se alinean por nombre antes de comparar) y la desviación muestral o
+poblacional del escalado, sin efecto práctico.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">u</span><span class="o">.</span><span class="n">guardar_json</span><span class="p">(</span><span class="n">tiempos</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">RESULTADOS</span> <span class="o">/</span> <span class="s2">"tiempos_preprocesamiento.json"</span><span class="p">)</span>
+<span class="n">datos</span><span class="p">[</span><span class="s2">"train"</span><span class="p">]</span><span class="o">.</span><span class="n">unpersist</span><span class="p">()</span>
+<span class="n">datos</span><span class="p">[</span><span class="s2">"test"</span><span class="p">]</span><span class="o">.</span><span class="n">unpersist</span><span class="p">()</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">tiempos</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>base_pandas_s         2.2
+preproc_sklearn_s     3.6
+preproc_spark_s      34.5
+dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "ml-lending"
+        },
+        kernelOptions: {
+            name: "ml-lending",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'ml-lending'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="04b_resumen_eda.html"
+       title="página anterior">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">anterior</p>
+        <p class="prev-next-title">Resumen ejecutivo del EDA</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="06_modelado_sklearn.html"
+       title="siguiente página">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">siguiente</p>
+        <p class="prev-next-title">6. Modelado con scikit-learn</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contenido
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-de-modelado">5.1 Base de modelado</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#particion-comun-80-20-estratificada">5.2 Partición común (80/20 estratificada)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preprocesamiento-con-scikit-learn">5.3 Preprocesamiento con scikit-learn</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preprocesamiento-con-pyspark">5.4 Preprocesamiento con PySpark</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#equivalencia-entre-entornos">5.5 Equivalencia entre entornos</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+Por Camilo Molina Guerrero
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

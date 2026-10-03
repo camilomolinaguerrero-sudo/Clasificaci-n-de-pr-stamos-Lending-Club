@@ -1,0 +1,992 @@
+
+<!DOCTYPE html>
+
+
+<html lang="es" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>12. Reflexión crítica &#8212; Default en préstamos de Lending Club: scikit-learn frente a PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="_static/documentation_options.js?v=78d55cf8"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Haz clic para mostrar';</script>
+    <script>let toggleHintHide = 'Haz clic para ocultar';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/translations.js?v=d190bf04"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]]}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '12_reflexion_critica';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="next" title="Referencias" href="13_referencias.html" />
+    <link rel="prev" title="11. Experimentos complementarios" href="11_experimentos.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="es"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Saltar al contenido principal</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Volver arriba</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Advertencia de versión"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Navegación del sitio">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="En esta página">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Default en préstamos de Lending Club: scikit-learn frente a PySpark</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Default en préstamos de Lending Club: scikit-learn frente a PySpark
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Análisis exploratorio</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_carga_vision_general.html">1. Carga inicial y visión general</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_eda_univariado.html">2. Análisis unidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_eda_bivariado.html">3. Análisis bidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_valores_faltantes.html">4. Valores faltantes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04b_resumen_eda.html">Resumen ejecutivo del EDA</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocesamiento y modelado</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="05_preprocesamiento.html">5. Preprocesamiento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_modelado_sklearn.html">6. Modelado con scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_modelado_pyspark.html">7. Modelado con PySpark</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Evaluación y comparación</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="08_comparacion_estadistica.html">8. Comparación estadística de los modelos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_lime.html">9. Interpretabilidad con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_comparacion_resultados.html">10. Comparación de resultados</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_experimentos.html">11. Experimentos complementarios</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Discusión</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">12. Reflexión crítica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_referencias.html">Referencias</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/camilomolinaguerrero-sudo/Clasificaci-n-de-pr-stamos-Lending-Club" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Repositorio de origen"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Descarga esta pagina">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/12_reflexion_critica.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Descargar archivo fuente"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Imprimir en PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Modo de pantalla completa"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Tema" data-bs-title="Tema"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Claro"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Oscuro"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="Sistema"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>12. Reflexión crítica</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contenido </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-entorno-fue-mas-rapido-y-por-que">12.1 ¿Qué entorno fue más rápido y por qué?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cual-fue-mas-preciso">12.2 ¿Cuál fue más preciso?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-diferencias-de-auc-son-estadisticamente-significativas-y-cuales-son-relevantes">12.3 ¿Qué diferencias de AUC son estadísticamente significativas y cuáles son relevantes?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-diferencias-de-implementacion-explican-las-discrepancias">12.4 ¿Qué diferencias de implementación explican las discrepancias?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#limitaciones-de-delong-y-aporte-de-mcnemar-y-del-bootstrap">12.5 Limitaciones de DeLong y aporte de McNemar y del bootstrap</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-partir-de-que-volumen-de-datos-pyspark-comienza-a-superar-a-scikit-learn">12.6 ¿A partir de qué volumen de datos PySpark comienza a superar a scikit-learn?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-aporta-lime-y-cuales-son-sus-limitaciones-en-entornos-distribuidos">12.7 ¿Qué aporta LIME y cuáles son sus limitaciones en entornos distribuidos?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-efecto-tuvo-cada-condicion-obligatoria-en-el-rendimiento">12.8 ¿Qué efecto tuvo cada condición obligatoria en el rendimiento?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">12.9 Conclusión</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="reflexion-critica">
+<h1>12. Reflexión crítica<a class="headerlink" href="#reflexion-critica" title="Link to this heading">#</a></h1>
+<p>Este capítulo responde las ocho preguntas de la sección 9.10.5 del enunciado con la evidencia de
+los capítulos 5 a 11. Las cifras remiten a las tablas de esos capítulos.</p>
+<section id="que-entorno-fue-mas-rapido-y-por-que">
+<h2>12.1 ¿Qué entorno fue más rápido y por qué?<a class="headerlink" href="#que-entorno-fue-mas-rapido-y-por-que" title="Link to this heading">#</a></h2>
+<p><strong>scikit-learn, con claridad.</strong> El entrenamiento con validación cruzada de los seis modelos tomó
+1.967 s (33 min) en scikit-learn y 11.495 s (3,2 h) en PySpark, 5,8 veces más. scikit-learn fue más
+rápido en cinco de los seis modelos, con cocientes entre 3,0 (árbol) y 19,5 (Naive Bayes). También
+lo fue en el preprocesamiento desde el CSV (17,6 s frente a 34,5 s), en la predicción (menos de
+0,4 s frente a 0,2-61 s) y en el cálculo del umbral y de las métricas (0,3-1,8 s frente a 5-533 s
+por modelo). La única excepción, el SVM lineal (225 s en Spark frente a 616 s), no es una ventaja de
+Spark: <code class="docutils literal notranslate"><span class="pre">liblinear</span></code> tarda en converger cerca de la solución degenerada de la pérdida <em>hinge</em>,
+mientras que Spark corta su optimizador a las 100 iteraciones (capítulo 11).</p>
+<p>Las razones se pueden separar con los experimentos del capítulo 11:</p>
+<ol class="arabic simple">
+<li><p><strong>El tamaño completo del conjunto cabe en memoria.</strong> La matriz de entrenamiento ocupa 620 MB
+(1.078.447 × 72 en <code class="docutils literal notranslate"><span class="pre">float64</span></code>) y los datos cacheados en Spark, 151 MB. Con ese volumen,
+scikit-learn trabaja sobre arreglos contiguos de NumPy con código compilado y multihilo, sin
+serializar nada. Spark paga en cada pasada un costo fijo: programar tareas, mover datos entre la
+JVM y Python y combinar resultados parciales. El capítulo 11 lo muestra con nitidez: con 10.000
+filas, un ajuste de Spark tarda de 2 a 7 s, cuando a scikit-learn le basta una fracción de
+segundo. Ese costo fijo solo se diluye con muchos más datos.</p></li>
+<li><p><strong>El caché hace viable a Spark, pero no lo vuelve más rápido que scikit-learn.</strong> Sin
+<code class="docutils literal notranslate"><span class="pre">persist</span></code>, cada iteración de L-BFGS cuesta 4,9 s en lugar de 0,52 s (9,4 veces más), porque
+vuelve a leer y descomprimir el CSV. Todos los tiempos de Spark ya incluyen este beneficio.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">CrossValidator</span></code> es secuencial.</strong> Entrena una combinación tras otra, y cada ajuste de los
+modelos iterativos exige muchas pasadas distribuidas: el gradient boosting de Spark, con 100
+iteraciones dependientes y varias pasadas por iteración, consumió 8.805 s (77 % del total). En
+scikit-learn, <code class="docutils literal notranslate"><span class="pre">GridSearchCV(n_jobs=-1)</span></code> reparte hasta 10 ajustes completos entre los núcleos.
+Subir <code class="docutils literal notranslate"><span class="pre">parallelism</span></code> a 3 no ayudó (135 s frente a 140 s en la regresión logística), porque cada
+ajuste de Spark ya ocupa los 10 núcleos.</p></li>
+<li><p><strong>La configuración de Spark está pensada para un clúster.</strong> Con los datos repartidos en 400
+particiones, como el <code class="docutils literal notranslate"><span class="pre">spark.sql.shuffle.partitions</span></code> del enunciado, la validación cruzada fue 2,3
+veces más lenta en la regresión logística y 11,5 veces en el árbol que con 40 particiones. La
+memoria configurada (8 GB y fracciones 0,8/0,3) no tuvo efecto medible, porque los datos
+cacheados ocupan 151 MB.</p></li>
+</ol>
+<p>La expectativa del enunciado, que PySpark superara en velocidad a scikit-learn, no se cumplió en
+estas condiciones: un solo portátil y un conjunto que cabe holgadamente en memoria. Spark está
+diseñado para repartir datos que no caben en una máquina entre muchas máquinas, y aquí no tuvo ni
+lo uno ni lo otro.</p>
+</section>
+<section id="cual-fue-mas-preciso">
+<h2>12.2 ¿Cuál fue más preciso?<a class="headerlink" href="#cual-fue-mas-preciso" title="Link to this heading">#</a></h2>
+<p>En los dos entornos el modelo con mejor desempeño discriminativo es el <strong>gradient boosting</strong>: AUC
+de 0,7235 [0,7212; 0,7258] en scikit-learn y 0,7228 [0,7205; 0,7252] en PySpark, AUC-PR de 0,395 y
+0,393 y F1 de 0,437 en el umbral de Youden. Le siguen el bosque aleatorio (0,7197 y 0,7181) y la
+regresión logística (0,7171 en ambos). En el umbral de Youden, la mayor precisión (0,339 y 0,338) y
+la mayor exactitud (0,686 y 0,683) corresponden al bosque, que marca menos préstamos como default.
+La regresión logística, con 72 coeficientes y menos de 10 s de entrenamiento en scikit-learn, queda
+a solo 0,006 del mejor modelo: la mayor parte de la señal predictiva es aproximadamente lineal en
+las variables transformadas (tasa de interés, plazo, FICO, <code class="docutils literal notranslate"><span class="pre">dti</span></code>).</p>
+<p>Entre entornos, scikit-learn es ligeramente más preciso en los tres modelos de árboles (ventajas de
+0,0007 a 0,0027 de AUC), iguala a PySpark en la regresión logística y Naive Bayes y queda muy por
+debajo en el SVM lineal (0,539 frente a 0,644). Ninguna de estas diferencias, salvo la del SVM (a
+favor de PySpark), alcanza el margen de relevancia práctica de 0,005.</p>
+<p>Un AUC de 0,72 es un resultado modesto pero realista para el riesgo de crédito con información de
+originación: el capítulo 9 muestra préstamos de perfil impecable que incumplieron y préstamos de
+alto riesgo que se pagaron. Lending Club ya fijaba su tasa de interés con un modelo de riesgo, de
+modo que buena parte de la información útil está resumida en <code class="docutils literal notranslate"><span class="pre">int_rate</span></code>, que por sí sola alcanza un
+AUC de 0,683 (capítulo 3).</p>
+</section>
+<section id="que-diferencias-de-auc-son-estadisticamente-significativas-y-cuales-son-relevantes">
+<h2>12.3 ¿Qué diferencias de AUC son estadísticamente significativas y cuáles son relevantes?<a class="headerlink" href="#que-diferencias-de-auc-son-estadisticamente-significativas-y-cuales-son-relevantes" title="Link to this heading">#</a></h2>
+<p>El margen de relevancia práctica se fijó antes de ver los resultados en |ΔAUC| ≥ 0,005, el
+equivalente a 0,01 en el coeficiente de Gini (capítulo 8).</p>
+<p><strong>Entre entornos</strong> (familia de 6 comparaciones, Holm):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Modelo</p></th>
+<th class="head"><p>ΔAUC (sklearn − Spark)</p></th>
+<th class="head"><p>IC 95 %</p></th>
+<th class="head"><p>p ajustado</p></th>
+<th class="head"><p>Significativa</p></th>
+<th class="head"><p>Relevante</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Regresión logística</p></td>
+<td><p>−0,00001</p></td>
+<td><p>[−0,00003; 0,00001]</p></td>
+<td><p>0,94</p></td>
+<td><p>no</p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-odd"><td><p>Árbol</p></td>
+<td><p>0,0027</p></td>
+<td><p>[0,0017; 0,0037]</p></td>
+<td><p>&lt; 10⁻⁶</p></td>
+<td><p>sí</p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-even"><td><p>Bosque</p></td>
+<td><p>0,0015</p></td>
+<td><p>[0,0011; 0,0020]</p></td>
+<td><p>&lt; 10⁻⁶</p></td>
+<td><p>sí</p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-odd"><td><p>Gradient boosting</p></td>
+<td><p>0,0007</p></td>
+<td><p>[0,0002; 0,0011]</p></td>
+<td><p>0,009</p></td>
+<td><p>sí</p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-even"><td><p>SVM lineal</p></td>
+<td><p>−0,1045</p></td>
+<td><p>[−0,1083; −0,1007]</p></td>
+<td><p>&lt; 10⁻⁶</p></td>
+<td><p>sí</p></td>
+<td><p><strong>sí</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>Naive Bayes</p></td>
+<td><p>0,0000</p></td>
+<td><p>[0,0000; 0,0000]</p></td>
+<td><p>0,94</p></td>
+<td><p>no</p></td>
+<td><p>no</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Las tres diferencias significativas de los modelos de árboles son reales en el sentido estadístico
+(no se deben al azar del conjunto de prueba), pero de una magnitud que no cambiaría ninguna
+decisión. Se detectan porque los AUC estimados de ambos entornos están muy correlacionados (0,91 a
+0,98), lo que reduce el error estándar de la diferencia a valores entre 0,0002 y 0,0005. Solo el
+SVM difiere de manera relevante.</p>
+<p><strong>Entre modelos</strong> (dos familias de 15 pares): las 30 diferencias son significativas tras Holm. Son
+relevantes todas las que involucran al árbol, a Naive Bayes o al SVM, y la del gradient boosting
+frente a la regresión logística (0,0064 en scikit-learn y 0,0057 en PySpark). No lo son la del
+bosque frente a la regresión logística (0,0026 y 0,0011) ni la del gradient boosting frente al
+bosque (0,0038 y 0,0047). En la práctica hay un grupo de tres modelos cercanos, encabezado por el
+gradient boosting, y tres modelos claramente inferiores.</p>
+</section>
+<section id="que-diferencias-de-implementacion-explican-las-discrepancias">
+<h2>12.4 ¿Qué diferencias de implementación explican las discrepancias?<a class="headerlink" href="#que-diferencias-de-implementacion-explican-las-discrepancias" title="Link to this heading">#</a></h2>
+<p>Los dos entornos recibieron la misma matriz de 72 columnas (verificado en el capítulo 5: medias de
+columna iguales hasta 10⁻¹²), la misma partición y los mismos espacios de búsqueda. Lo que difiere
+es cómo cada biblioteca construye el modelo:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fuente de discrepancia</p></th>
+<th class="head"><p>scikit-learn</p></th>
+<th class="head"><p>PySpark</p></th>
+<th class="head"><p>Modelos afectados</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Poda posterior del árbol</p></td>
+<td><p>no poda</p></td>
+<td><p>une hojas hermanas que predicen la misma clase</p></td>
+<td><p>árbol, bosque</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cortes de los árboles</p></td>
+<td><p>todos los valores distintos de cada variable</p></td>
+<td><p>a lo sumo <code class="docutils literal notranslate"><span class="pre">maxBins</span> <span class="pre">−</span> <span class="pre">1</span></code> = 31 cortes por variable, elegidos con cuantiles de una muestra</p></td>
+<td><p>árbol, bosque, gradient boosting</p></td>
+</tr>
+<tr class="row-even"><td><p>Variables candidatas por nodo</p></td>
+<td><p>⌊√72⌋ = 8</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;sqrt&quot;</span></code> usaría ⌈√72⌉ = 9; se fijó <code class="docutils literal notranslate"><span class="pre">&quot;8&quot;</span></code></p></td>
+<td><p>bosque</p></td>
+</tr>
+<tr class="row-odd"><td><p>Bootstrap</p></td>
+<td><p>muestra multinomial exacta</p></td>
+<td><p>pesos Poisson(1) por fila</p></td>
+<td><p>bosque</p></td>
+</tr>
+<tr class="row-even"><td><p>Hojas del boosting</p></td>
+<td><p>paso de Newton; predicción inicial = log-odds</p></td>
+<td><p>media de los gradientes; primer árbol ajustado a las etiquetas</p></td>
+<td><p>gradient boosting</p></td>
+</tr>
+<tr class="row-odd"><td><p>Regularización</p></td>
+<td><p><span class="math notranslate nohighlight">\(C\sum\ell_i + \frac12\lVert w\rVert^2\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\frac1n\sum\ell_i + \frac\lambda2\lVert w\rVert^2\)</span>; con <code class="docutils literal notranslate"><span class="pre">standardization=False</span></code></p></td>
+<td><p>regresión logística, SVM</p></td>
+</tr>
+<tr class="row-even"><td><p>Intercepto</p></td>
+<td><p>penalizado en <code class="docutils literal notranslate"><span class="pre">liblinear</span></code> (SVM), no en <code class="docutils literal notranslate"><span class="pre">lbfgs</span></code></p></td>
+<td><p>nunca penalizado</p></td>
+<td><p>SVM</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\lambda\)</span> efectivo en la validación cruzada</p></td>
+<td><p><span class="math notranslate nohighlight">\(1{,}5\lambda\)</span> (<span class="math notranslate nohighlight">\(C\)</span> fijado con <span class="math notranslate nohighlight">\(n\)</span>, pliegues de <span class="math notranslate nohighlight">\(2n/3\)</span>)</p></td>
+<td><p><span class="math notranslate nohighlight">\(\lambda\)</span></p></td>
+<td><p>regresión logística, SVM</p></td>
+</tr>
+<tr class="row-even"><td><p>Optimizador</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lbfgs</span></code> (≤ 1.000 iteraciones), <code class="docutils literal notranslate"><span class="pre">liblinear</span></code> dual (≤ 5.000)</p></td>
+<td><p>L-BFGS / OWL-QN (≤ 100 iteraciones)</p></td>
+<td><p>regresión logística, SVM</p></td>
+</tr>
+<tr class="row-odd"><td><p>Pliegues de validación</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">StratifiedKFold</span></code> barajado</p></td>
+<td><p>asignación aleatoria por fila, sin estratificar</p></td>
+<td><p>todos (solo en la selección)</p></td>
+</tr>
+<tr class="row-even"><td><p>Escalado</p></td>
+<td><p>desviación poblacional (<span class="math notranslate nohighlight">\(n\)</span>)</p></td>
+<td><p>desviación muestral (<span class="math notranslate nohighlight">\(n-1\)</span>)</p></td>
+<td><p>despreciable</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>La evidencia de los capítulos 7, 8 y 11 permite atribuir cada discrepancia observada:</p>
+<ul class="simple">
+<li><p><strong>Regresión logística y Naive Bayes</strong> no muestran discrepancias: ambos tienen un óptimo único
+(problema convexo y bien condicionado, o solución cerrada) y los dos entornos lo alcanzan. La
+diferencia entre el <span class="math notranslate nohighlight">\(\lambda\)</span> de la validación cruzada (1,5λ frente a λ) y los distintos
+optimizadores no se notan porque la regularización es despreciable con un millón de filas.</p></li>
+<li><p><strong>Árbol y bosque</strong>: la causa principal no es la que se esperaba. Se suponía que la
+discretización (<code class="docutils literal notranslate"><span class="pre">maxBins</span></code> = 32) explicaría la brecha, pero subir <code class="docutils literal notranslate"><span class="pre">maxBins</span></code> a 512 apenas cambia el
+AUC (de 0,649 a 0,655 a profundidad 5). La causa es la <strong>poda</strong>: al terminar de construir un
+árbol, Spark une las hojas hermanas que predicen la misma clase, sin parámetro público para
+desactivarlo. Con 80 % de préstamos pagados casi todas las hojas predicen «pagado», así que la
+poda borra cortes que no cambian la clase pero sí la probabilidad. A profundidad 2 y 3, el árbol
+de Spark queda en una sola hoja (AUC 0,5 frente a 0,671 y 0,683); a profundidad 5, en 6 hojas
+frente a 32 (0,649 frente a 0,695); a profundidad 10, en 558 frente a 958 (0,7015 frente a
+0,7041); y a profundidad 15 el número de hojas es el mismo y Spark incluso supera a scikit-learn
+(0,680 frente a 0,676). Como la búsqueda eligió profundidades de 10 y 15, en los modelos finales la
+diferencia es pequeña: 0,0027 de AUC en el árbol y 0,0015 en el bosque, donde se suma el
+bootstrap aproximado por Poisson.</p></li>
+<li><p><strong>Gradient boosting</strong>: sus árboles son de regresión, la poda no le afecta y las demás
+diferencias (discretización y forma de calcular las hojas) dejan una diferencia final de 0,0007.</p></li>
+<li><p><strong>SVM lineal</strong>: aquí la discrepancia es enorme (0,10 de AUC) y la causa es la <strong>función de
+pérdida combinada con el optimizador</strong>. Con la pérdida <em>hinge</em>, fijada en scikit-learn para
+igualar la de Spark (sección 6.7), y clases tan solapadas y desbalanceadas, el óptimo está
+pegado a la solución trivial <span class="math notranslate nohighlight">\(w = 0\)</span>, <span class="math notranslate nohighlight">\(b = -1\)</span> (todos los préstamos «pagados»). En el capítulo 11,
+con <span class="math notranslate nohighlight">\(\lambda = 10^{-5}\)</span>, la función objetivo de la solución de <code class="docutils literal notranslate"><span class="pre">liblinear</span></code> (39.956,8) es
+prácticamente la de la solución trivial (39.956,7), aunque sus parámetros no son los triviales
+(<span class="math notranslate nohighlight">\(\lVert w \rVert\)</span> = 0,48, <span class="math notranslate nohighlight">\(b\)</span> = −0,365, porque <code class="docutils literal notranslate"><span class="pre">liblinear</span></code> además penaliza el intercepto): cerca
+del óptimo la función objetivo es casi plana y la dirección de <span class="math notranslate nohighlight">\(w\)</span>, lo único que ordena las
+puntuaciones, queda mal determinada (AUC de prueba entre 0,46 y 0,54). Spark limita OWL-QN a 100
+iteraciones; su solución queda cerca de la trivial en escala (<span class="math notranslate nohighlight">\(\lVert w \rVert\)</span> = 0,046,
+<span class="math notranslate nohighlight">\(b\)</span> = −1,026) pero conserva una dirección útil (AUC 0,644 en el capítulo 7). Paradójicamente, el
+entorno que resuelve el problema de optimización de forma menos exacta obtiene el mejor
+clasificador. Con pesos que equilibran las clases, el SVM <em>hinge</em> alcanza un AUC de 0,717 en ambos
+entornos, y con la pérdida <em>squared hinge</em> también (capítulo 11). La pérdida <em>hinge</em> sin pesos,
+elegida para igualar los entornos, es una mala elección para este problema, aunque garantiza que
+ambos minimicen la misma función.</p></li>
+<li><p><strong>Escalado</strong>: la desviación muestral frente a la poblacional no tiene efecto medible (diferencia
+relativa de 4,6 × 10⁻⁷).</p></li>
+</ul>
+</section>
+<section id="limitaciones-de-delong-y-aporte-de-mcnemar-y-del-bootstrap">
+<h2>12.5 Limitaciones de DeLong y aporte de McNemar y del bootstrap<a class="headerlink" href="#limitaciones-de-delong-y-aporte-de-mcnemar-y-del-bootstrap" title="Link to this heading">#</a></h2>
+<p>La prueba de DeLong es la adecuada para la pregunta «¿ordenan igual de bien dos modelos las mismas
+observaciones?», pero en este diseño tiene cuatro limitaciones:</p>
+<ol class="arabic simple">
+<li><p><strong>Solo mide la incertidumbre del muestreo de prueba.</strong> El error estándar de DeLong trata los
+modelos como fijos y pregunta cuánto variaría el AUC con otro conjunto de prueba de la misma
+población. No incorpora la variabilidad del entrenamiento: otra semilla del bosque, otros
+pliegues de validación cruzada u otra partición entrenamiento/prueba darían modelos algo
+distintos. Con 269.612 observaciones el error estándar de una diferencia pareada es muy pequeño
+(0,0002 a 0,0005) y puede ser menor que la variabilidad entre semillas de un modelo estocástico,
+así que una diferencia «significativa» entre dos bosques no prueba que un algoritmo sea mejor que
+el otro en general.</p></li>
+<li><p><strong>Supone observaciones independientes.</strong> Los préstamos de un mismo estado o cohorte comparten
+factores (el ciclo económico de 2016-2017, por ejemplo); la dependencia hace que el error
+estándar real sea mayor que el que calcula la prueba.</p></li>
+<li><p><strong>El AUC resume todos los umbrales.</strong> Dos modelos con el mismo AUC pueden diferir mucho en el
+umbral operativo (aprobar o rechazar un crédito), y una diferencia de AUC puede venir de
+regiones de la curva ROC (tasas de falsos positivos muy altas) que no interesan al negocio.</p></li>
+<li><p><strong>Es asintótica.</strong> Con este tamaño de muestra la aproximación normal es excelente; no es una
+limitación práctica aquí, pero sí lo sería con pocas decenas de defaults.</p></li>
+</ol>
+<p>Las pruebas complementarias atacan las limitaciones 3 y 4 y añaden otra mirada:</p>
+<ul class="simple">
+<li><p><strong>McNemar</strong> compara decisiones concretas en el umbral elegido con entrenamiento: cuenta en
+cuántos préstamos acierta uno y falla el otro. Trata igual un falso positivo (rechazar a un buen
+pagador) que un falso negativo (aprobar un default), aunque en crédito sus costos son muy
+distintos, y con 80 % de préstamos pagados sus conclusiones están dominadas por la clase
+mayoritaria.</p></li>
+<li><p><strong>El bootstrap pareado</strong> no necesita una fórmula de varianza: da intervalos para cualquier
+métrica, incluidas AUC-PR y F1, que se concentran en la clase minoritaria y no tienen una prueba
+analítica estándar. Para el AUC sirve además como verificación independiente de DeLong.</p></li>
+</ul>
+<p>Ninguna de las tres pruebas resuelve la limitación 1; para eso habría que repetir el
+entrenamiento con varias semillas y particiones (por ejemplo, la validación cruzada 5×2 de
+Dietterich, 1998), lo que multiplicaría el costo de cómputo.</p>
+<p><strong>¿Coinciden las tres pruebas?</strong> En lo esencial sí, con discrepancias que se explican por lo que mide
+cada una (tabla de la sección 8.6):</p>
+<ul class="simple">
+<li><p>DeLong y el bootstrap del AUC coinciden en las ocho comparaciones complementarias (las 6 entre
+entornos y las 2 entre los dos mejores modelos), con intervalos que difieren a lo sumo en 0,0001.
+Es la comprobación esperada: estiman la misma cantidad, y con 269.612 observaciones la
+aproximación asintótica de DeLong es excelente.</p></li>
+<li><p>McNemar, que no evalúa relevancia, rechaza la igualdad de errores en cinco de las seis
+comparaciones entre entornos, y sus discrepancias con DeLong son instructivas. Entre los dos
+entornos de la regresión logística encuentra una diferencia muy significativa (1.334 frente a 336
+préstamos discordantes) aunque los modelos son idénticos en AUC: los umbrales de Youden difieren
+en 0,002 y eso basta para cambiar la decisión de 1.670 préstamos cercanos al umbral (el bootstrap
+de AUC-PR y F1 también detecta esa diferencia, irrelevante en magnitud). Entre el gradient
+boosting y el bosque, DeLong favorece al primero (mejor ordenamiento) y McNemar al segundo (menos
+errores: 31,4 % frente a 34,7 % en scikit-learn y 31,7 % frente a 34,5 % en PySpark), porque el
+bosque, con su umbral, marca menos préstamos como default, y McNemar, al contar igual todos los
+errores, premia acertar en la clase mayoritaria.</p></li>
+<li><p>El bootstrap de AUC-PR y F1, las métricas de la clase minoritaria, confirma la ventaja del
+gradient boosting sobre el bosque (ΔAUC-PR de 0,007, por encima del margen) y muestra que en F1
+los entornos son indistinguibles para el bosque y el gradient boosting.</p></li>
+</ul>
+<p>La conclusión de fondo es la misma con DeLong y el bootstrap: salvo el SVM, los dos entornos
+producen modelos equivalentes, y el gradient boosting es el mejor en capacidad de ordenamiento por un
+margen pequeño pero real. McNemar recuerda que «mejor ordenamiento» no implica «menos errores» en un
+umbral dado.</p>
+</section>
+<section id="a-partir-de-que-volumen-de-datos-pyspark-comienza-a-superar-a-scikit-learn">
+<h2>12.6 ¿A partir de qué volumen de datos PySpark comienza a superar a scikit-learn?<a class="headerlink" href="#a-partir-de-que-volumen-de-datos-pyspark-comienza-a-superar-a-scikit-learn" title="Link to this heading">#</a></h2>
+<p>El capítulo 11 midió un ajuste de tres modelos con 1 % a 100 % del entrenamiento y con el
+entrenamiento replicado 2 y 4 veces (hasta 4,3 millones de filas):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Modelo</p></th>
+<th class="head"><p>Cociente PySpark / scikit-learn con 1,08 M filas</p></th>
+<th class="head"><p>PySpark más rápido desde</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Árbol (profundidad 10)</p></td>
+<td><p>1,19</p></td>
+<td><p><strong>≈ 2,2 millones de filas</strong> (11,7 s frente a 14,0 s)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Regresión logística</p></td>
+<td><p>5,76 (3,6 con 4,3 M)</p></td>
+<td><p>no ocurre hasta 4,3 M</p></td>
+</tr>
+<tr class="row-even"><td><p>Bosque (50 árboles, profundidad 10)</p></td>
+<td><p>3,20 (2,3 con 4,3 M)</p></td>
+<td><p>no ocurre hasta 4,3 M</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>La respuesta depende de cómo paraleliza scikit-learn cada algoritmo. El árbol de scikit-learn usa un
+solo núcleo; Spark reparte cada pasada entre los 10, y su costo marginal por millón de filas
+(3,3 s) es la mitad del de scikit-learn (6,7 s). En cuanto el volumen diluye el costo fijo de Spark,
+lo supera: desde unos 2 millones de filas en este equipo. La regresión logística (<code class="docutils literal notranslate"><span class="pre">lbfgs</span></code> con
+operaciones vectorizadas) y el bosque (<code class="docutils literal notranslate"><span class="pre">n_jobs=-1</span></code>) ya aprovechan los 10 núcleos en scikit-learn, y
+su costo marginal (0,9 y 10,4 s por millón de filas) es menor que el de Spark (2,7 y 20,9 s): en
+una sola máquina, Spark no los alcanzaría con más datos.</p>
+<p>El cruce que importa es otro: <strong>la memoria</strong>. scikit-learn necesita la matriz completa en RAM (2,5 GB
+para 4,3 millones de filas), y hacia los 100 millones de filas (unos 60 GB) ya no cabría en los 24 GB
+del equipo, mientras que Spark puede derramar a disco o repartir los datos entre varias máquinas. Con
+el conjunto de este proyecto (1,35 millones de préstamos), scikit-learn es la herramienta adecuada;
+PySpark se justifica cuando los datos no caben en una máquina o cuando ya viven en un clúster.</p>
+</section>
+<section id="que-aporta-lime-y-cuales-son-sus-limitaciones-en-entornos-distribuidos">
+<h2>12.7 ¿Qué aporta LIME y cuáles son sus limitaciones en entornos distribuidos?<a class="headerlink" href="#que-aporta-lime-y-cuales-son-sus-limitaciones-en-entornos-distribuidos" title="Link to this heading">#</a></h2>
+<p><strong>Aporte.</strong> LIME mostró que los dos gradient boosting, dos implementaciones del mismo algoritmo,
+se apoyan en razones parecidas: en el falso negativo coinciden 8 de las 10 condiciones más
+influyentes y en el falso positivo 6, con pesos similares. Las condiciones que dominan son tasa de
+interés, plazo, propósito, <code class="docutils literal notranslate"><span class="pre">dti</span></code>, monto, ingreso y que la antigüedad laboral esté informada. Son
+las que el EDA había señalado, incluido el faltante informativo de <code class="docutils literal notranslate"><span class="pre">emp_length</span></code> del capítulo 4. Los
+dos errores analizados no provienen de reglas espurias, sino de préstamos cuyo desenlace contradijo
+un perfil típico: un préstamo de 10.000 dólares a 5,3 % con FICO de 774 e ingreso de 350.000
+dólares que incumplió, y otro a 24,5 % y 60 meses que se pagó. Con dos instancias no se puede
+generalizar a todas las decisiones, pero para un analista de crédito este tipo de verificación vale
+más que una métrica global.</p>
+<p><strong>Limitaciones generales.</strong> El modelo lineal local explica solo la mitad de la variación de la
+probabilidad en el vecindario (<span class="math notranslate nohighlight">\(R^2\)</span> de 0,45 a 0,54). Con cinco semillas, solo 5 de las 10
+condiciones se repiten. Las perturbaciones ignoran las correlaciones entre variables y tratan cada
+columna one-hot por separado, y por eso aparecen condiciones poco informativas como
+<code class="docutils literal notranslate"><span class="pre">addr_state_OR=0</span></code>.</p>
+<p><strong>Limitaciones en entornos distribuidos.</strong> LIME es un algoritmo de memoria local. Con PySpark hubo
+que hacer dos cosas. Primero, traer al driver una muestra de 50.000 filas como datos de referencia,
+porque el millón completo no debe salir del clúster; eso cambió ligeramente los cuartiles y, por
+tanto, algunas condiciones (<code class="docutils literal notranslate"><span class="pre">int_rate</span> <span class="pre">&gt;</span> <span class="pre">16.01</span></code> frente a <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">15.99</span></code>). Segundo, envolver el modelo en
+una función que convierte cada lote de 5.000 perturbaciones en un DataFrame de Spark, lanza un
+trabajo distribuido y devuelve las probabilidades. Cada explicación tardó entre 1,1 y 1,9 s, entre
+55 y 65 veces más que con scikit-learn. Para explicar miles de préstamos habría que distribuir el
+explicador a los ejecutores, algo que LIME no ofrece.</p>
+</section>
+<section id="que-efecto-tuvo-cada-condicion-obligatoria-en-el-rendimiento">
+<h2>12.8 ¿Qué efecto tuvo cada condición obligatoria en el rendimiento?<a class="headerlink" href="#que-efecto-tuvo-cada-condicion-obligatoria-en-el-rendimiento" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Condición</p></th>
+<th class="head"><p>Efecto observado</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Conjunto completo, sin muestreo</strong></p></td>
+<td><p>En scikit-learn, el DataFrame crudo ocupó 6,3 GB y la matriz de diseño 620 MB: caben en 24 GB y los 33 min de entrenamiento son manejables. En Spark multiplicó el costo de los modelos iterativos (gradient boosting: 2,4 h). En lo estadístico, las 269.612 observaciones de prueba dan errores estándar de 0,0002 a 0,0005 para las diferencias de AUC, de modo que diferencias triviales resultan significativas; de ahí la necesidad del margen de relevancia.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Sin <code class="docutils literal notranslate"><span class="pre">.toPandas()</span></code> ni <code class="docutils literal notranslate"><span class="pre">.collect()</span></code> antes de entrenar</strong></p></td>
+<td><p>Obligó a hacer en Spark todo el preprocesamiento, la verificación de equivalencia (con agregados), el umbral de Youden (con cuantiles y conteos) y las métricas. Esas etapas posteriores costaron entre 5 y 533 s por modelo, frente a 0,3-1,8 s en scikit-learn. La transferencia final de <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">default</span></code> y puntuación tomó 0,1-0,2 s (55 s en el bosque, probablemente por un recálculo).</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Partición común en archivo (sin <code class="docutils literal notranslate"><span class="pre">randomSplit</span></code>)</strong></p></td>
+<td><p>Costo despreciable (una unión por <code class="docutils literal notranslate"><span class="pre">id</span></code>) y beneficio decisivo: permitió emparejar las 269.612 observaciones y aplicar DeLong, McNemar y el bootstrap entre entornos.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Caché tras el <code class="docutils literal notranslate"><span class="pre">VectorAssembler</span></code></strong></p></td>
+<td><p>Indispensable: sin caché cada iteración cuesta 9,4 veces más (4,9 s frente a 0,52 s), y la validación cruzada de la regresión logística habría pasado de menos de 4 min a más de media hora.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong><code class="docutils literal notranslate"><span class="pre">ParamGridBuilder</span></code> + <code class="docutils literal notranslate"><span class="pre">CrossValidator</span></code> (sin bucles)</strong></p></td>
+<td><p>Garantiza la misma selección por AUC con 3 pliegues, pero entrena las combinaciones en serie; <code class="docutils literal notranslate"><span class="pre">parallelism=3</span></code> no aportó ganancia. Es la principal razón de que el gradient boosting tarde 2,4 h.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Sesión: 400 particiones de shuffle</strong></p></td>
+<td><p>Con los datos en 400 particiones la validación cruzada fue 2,3 veces (regresión logística) y 11,5 veces (árbol) más lenta que con 40; por eso los datos se repartieron en 40, manteniendo la configuración de la sesión.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Sesión: memoria (8 GB, fracciones 0,8/0,3)</strong></p></td>
+<td><p>Sin efecto medible: con 2 GB o con las fracciones por defecto los tiempos cambian unos segundos, porque los datos cacheados ocupan 151 MB.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong><code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> sin <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code></strong></p></td>
+<td><p>El preprocesamiento se ajusta una vez (no en cada pliegue), lo que ahorra tiempo e introduce una fuga mínima en la validación cruzada (mediana y escala calculadas con todo el entrenamiento), despreciable con un millón de filas.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong><code class="docutils literal notranslate"><span class="pre">loss=&quot;hinge&quot;</span></code> y <span class="math notranslate nohighlight">\(C = 1/(\lambda n)\)</span></strong></p></td>
+<td><p>Igualan formalmente las funciones objetivo, pero la pérdida <em>hinge</em> sin pesos lleva al SVM a una solución casi degenerada (AUC 0,539 en scikit-learn); con clases balanceadas el mismo SVM alcanza 0,717.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="conclusion">
+<h2>12.9 Conclusión<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>Con 1,35 millones de préstamos y la información disponible al originarlos, el mejor modelo de los
+seis es el <strong>gradient boosting</strong>, con un AUC de 0,72 en ambos entornos. La regresión logística queda
+a 0,006 y el bosque aleatorio entre ambos. Las dos bibliotecas producen modelos equivalentes en la
+práctica: las diferencias de AUC entre entornos son menores que 0,003 salvo en el SVM lineal, cuya
+discrepancia se debe a la pérdida <em>hinge</em> y no al entorno. Las diferencias de implementación más
+interesantes resultaron ser la poda de hojas de los árboles de Spark y la degeneración del SVM
+<em>hinge</em>; ninguna de las dos estaba anticipada en el enunciado, y ambas se identificaron con
+experimentos dirigidos.</p>
+<p>En velocidad, scikit-learn fue 5,8 veces más rápido en el entrenamiento con validación cruzada.
+PySpark solo superó a scikit-learn en el árbol de decisión y a partir de unos 2 millones de filas.
+La condición que más afectó el rendimiento de Spark fue el número de particiones, seguida del caché,
+sin el cual el entrenamiento iterativo sería inviable.</p>
+<p>Las conclusiones tienen tres limitaciones. Primero, todo se midió en una sola máquina; en un clúster
+los tiempos de Spark serían otros. Segundo, cada modelo se entrenó una vez, con una semilla, de modo
+que las pruebas estadísticas no incorporan la variabilidad del entrenamiento. Tercero, la población
+de préstamos cerrados tiene un sesgo de selección por cohorte (las cohortes recientes solo aportan
+sus defaults tempranos y sus prepagos), que limita la extrapolación a préstamos futuros, aunque no
+afecta la comparación entre modelos y entornos.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="11_experimentos.html"
+       title="página anterior">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">anterior</p>
+        <p class="prev-next-title">11. Experimentos complementarios</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="13_referencias.html"
+       title="siguiente página">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">siguiente</p>
+        <p class="prev-next-title">Referencias</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contenido
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-entorno-fue-mas-rapido-y-por-que">12.1 ¿Qué entorno fue más rápido y por qué?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cual-fue-mas-preciso">12.2 ¿Cuál fue más preciso?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-diferencias-de-auc-son-estadisticamente-significativas-y-cuales-son-relevantes">12.3 ¿Qué diferencias de AUC son estadísticamente significativas y cuáles son relevantes?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-diferencias-de-implementacion-explican-las-discrepancias">12.4 ¿Qué diferencias de implementación explican las discrepancias?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#limitaciones-de-delong-y-aporte-de-mcnemar-y-del-bootstrap">12.5 Limitaciones de DeLong y aporte de McNemar y del bootstrap</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-partir-de-que-volumen-de-datos-pyspark-comienza-a-superar-a-scikit-learn">12.6 ¿A partir de qué volumen de datos PySpark comienza a superar a scikit-learn?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-aporta-lime-y-cuales-son-sus-limitaciones-en-entornos-distribuidos">12.7 ¿Qué aporta LIME y cuáles son sus limitaciones en entornos distribuidos?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#que-efecto-tuvo-cada-condicion-obligatoria-en-el-rendimiento">12.8 ¿Qué efecto tuvo cada condición obligatoria en el rendimiento?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">12.9 Conclusión</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+Por Camilo Molina Guerrero
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

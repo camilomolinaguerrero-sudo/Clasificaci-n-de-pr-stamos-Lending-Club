@@ -1,0 +1,2422 @@
+
+<!DOCTYPE html>
+
+
+<html lang="es" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>1. Carga inicial y visión general &#8212; Default en préstamos de Lending Club: scikit-learn frente a PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="_static/documentation_options.js?v=78d55cf8"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Haz clic para mostrar';</script>
+    <script>let toggleHintHide = 'Haz clic para ocultar';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/translations.js?v=d190bf04"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '01_carga_vision_general';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="next" title="2. Análisis unidimensional" href="02_eda_univariado.html" />
+    <link rel="prev" title="Default en préstamos de Lending Club: scikit-learn frente a PySpark" href="intro.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="es"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Saltar al contenido principal</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Volver arriba</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Advertencia de versión"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Navegación del sitio">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="En esta página">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Default en préstamos de Lending Club: scikit-learn frente a PySpark</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Default en préstamos de Lending Club: scikit-learn frente a PySpark
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Análisis exploratorio</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">1. Carga inicial y visión general</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_eda_univariado.html">2. Análisis unidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_eda_bivariado.html">3. Análisis bidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_valores_faltantes.html">4. Valores faltantes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04b_resumen_eda.html">Resumen ejecutivo del EDA</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocesamiento y modelado</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="05_preprocesamiento.html">5. Preprocesamiento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_modelado_sklearn.html">6. Modelado con scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_modelado_pyspark.html">7. Modelado con PySpark</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Evaluación y comparación</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="08_comparacion_estadistica.html">8. Comparación estadística de los modelos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_lime.html">9. Interpretabilidad con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_comparacion_resultados.html">10. Comparación de resultados</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_experimentos.html">11. Experimentos complementarios</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Discusión</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="12_reflexion_critica.html">12. Reflexión crítica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_referencias.html">Referencias</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/camilomolinaguerrero-sudo/Clasificaci-n-de-pr-stamos-Lending-Club" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Repositorio de origen"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Descarga esta pagina">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/01_carga_vision_general.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Descargar archivo fuente"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Imprimir en PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Modo de pantalla completa"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Tema" data-bs-title="Tema"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Claro"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Oscuro"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="Sistema"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>1. Carga inicial y visión general</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contenido </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lectura-del-csv-completo-con-pandas">1.1 Lectura del CSV completo con pandas</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#primeras-y-ultimas-filas">1.2 Primeras y últimas filas</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#estado-del-prestamo-y-definicion-de-la-poblacion">1.3 Estado del préstamo y definición de la población</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tipos-de-datos-y-valores-nulos-info">1.4 Tipos de datos y valores nulos: <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#estadisticas-descriptivas-describe">1.5 Estadísticas descriptivas: <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variables-derivadas">1.6 Variables derivadas</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prestamos-por-ano-de-emision">1.7 Préstamos por año de emisión</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lectura-con-spark-comparacion-de-tiempos">1.8 Lectura con Spark (comparación de tiempos)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#almacenamiento-intermedio">1.9 Almacenamiento intermedio</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="carga-inicial-y-vision-general">
+<h1>1. Carga inicial y visión general<a class="headerlink" href="#carga-inicial-y-vision-general" title="Link to this heading">#</a></h1>
+<p>Este capítulo corresponde a la sección 9.10.4.1.1 del enunciado. Se lee el archivo
+<code class="docutils literal notranslate"><span class="pre">accepted_2007_to_2018Q4.csv.gz</span></code> completo (Kaggle, <em>wordsforthewise/lending-club</em>), se verifica
+la lectura, se describe su estructura y se define la población de préstamos sobre la que se
+construye la variable objetivo <code class="docutils literal notranslate"><span class="pre">default</span></code>. La lectura se hace con pandas y, para comparar tiempos,
+también con Spark.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"../src"</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+
+<span class="n">u</span><span class="o">.</span><span class="n">estilo</span><span class="p">()</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">"display.max_columns"</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="s2">"display.width"</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="s2">"display.max_colwidth"</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Equipo utilizado:"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">hardware</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Equipo utilizado:
+  sistema: Darwin 27.0.0
+  python: 3.11.16
+  nucleos_logicos: 10
+  cpu: Apple M5
+  nucleos_rendimiento: 4
+  nucleos_eficiencia: 6
+  ram_gb: 24.0
+</pre></div>
+</div>
+</div>
+</div>
+<section id="lectura-del-csv-completo-con-pandas">
+<h2>1.1 Lectura del CSV completo con pandas<a class="headerlink" href="#lectura-del-csv-completo-con-pandas" title="Link to this heading">#</a></h2>
+<p>Se lee el archivo comprimido completo, sin muestreo ni <code class="docutils literal notranslate"><span class="pre">nrows</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">crudo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">CSV_CRUDO</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">t_pandas</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tamaño del archivo comprimido: </span><span class="si">{</span><span class="n">u</span><span class="o">.</span><span class="n">CSV_CRUDO</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="o">**</span><span class="mi">20</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tiempo de lectura con pandas: </span><span class="si">{</span><span class="n">t_pandas</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dimensión del archivo: </span><span class="si">{</span><span class="n">crudo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> filas x </span><span class="si">{</span><span class="n">crudo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columnas"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Memoria en pandas: </span><span class="si">{</span><span class="n">crudo</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="o">**</span><span class="mi">30</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Tamaño del archivo comprimido: 374 MB
+Tiempo de lectura con pandas: 26.9 s
+Dimensión del archivo: 2,260,701 filas x 151 columnas
+Memoria en pandas: 6.26 GB
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="primeras-y-ultimas-filas">
+<h2>1.2 Primeras y últimas filas<a class="headerlink" href="#primeras-y-ultimas-filas" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crudo</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>member_id</th>
+      <th>loan_amnt</th>
+      <th>funded_amnt</th>
+      <th>funded_amnt_inv</th>
+      <th>term</th>
+      <th>int_rate</th>
+      <th>installment</th>
+      <th>grade</th>
+      <th>sub_grade</th>
+      <th>emp_title</th>
+      <th>emp_length</th>
+      <th>home_ownership</th>
+      <th>annual_inc</th>
+      <th>verification_status</th>
+      <th>issue_d</th>
+      <th>loan_status</th>
+      <th>pymnt_plan</th>
+      <th>url</th>
+      <th>desc</th>
+      <th>...</th>
+      <th>hardship_status</th>
+      <th>deferral_term</th>
+      <th>hardship_amount</th>
+      <th>hardship_start_date</th>
+      <th>hardship_end_date</th>
+      <th>payment_plan_start_date</th>
+      <th>hardship_length</th>
+      <th>hardship_dpd</th>
+      <th>hardship_loan_status</th>
+      <th>orig_projected_additional_accrued_interest</th>
+      <th>hardship_payoff_balance_amount</th>
+      <th>hardship_last_payment_amount</th>
+      <th>disbursement_method</th>
+      <th>debt_settlement_flag</th>
+      <th>debt_settlement_flag_date</th>
+      <th>settlement_status</th>
+      <th>settlement_date</th>
+      <th>settlement_amount</th>
+      <th>settlement_percentage</th>
+      <th>settlement_term</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>68407277</td>
+      <td>NaN</td>
+      <td>3600.0</td>
+      <td>3600.0</td>
+      <td>3600.0</td>
+      <td>36 months</td>
+      <td>13.99</td>
+      <td>123.03</td>
+      <td>C</td>
+      <td>C4</td>
+      <td>leadman</td>
+      <td>10+ years</td>
+      <td>MORTGAGE</td>
+      <td>55000.0</td>
+      <td>Not Verified</td>
+      <td>Dec-2015</td>
+      <td>Fully Paid</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanD...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>68355089</td>
+      <td>NaN</td>
+      <td>24700.0</td>
+      <td>24700.0</td>
+      <td>24700.0</td>
+      <td>36 months</td>
+      <td>11.99</td>
+      <td>820.28</td>
+      <td>C</td>
+      <td>C1</td>
+      <td>Engineer</td>
+      <td>10+ years</td>
+      <td>MORTGAGE</td>
+      <td>65000.0</td>
+      <td>Not Verified</td>
+      <td>Dec-2015</td>
+      <td>Fully Paid</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanD...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>68341763</td>
+      <td>NaN</td>
+      <td>20000.0</td>
+      <td>20000.0</td>
+      <td>20000.0</td>
+      <td>60 months</td>
+      <td>10.78</td>
+      <td>432.66</td>
+      <td>B</td>
+      <td>B4</td>
+      <td>truck driver</td>
+      <td>10+ years</td>
+      <td>MORTGAGE</td>
+      <td>63000.0</td>
+      <td>Not Verified</td>
+      <td>Dec-2015</td>
+      <td>Fully Paid</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanD...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>66310712</td>
+      <td>NaN</td>
+      <td>35000.0</td>
+      <td>35000.0</td>
+      <td>35000.0</td>
+      <td>60 months</td>
+      <td>14.85</td>
+      <td>829.90</td>
+      <td>C</td>
+      <td>C5</td>
+      <td>Information Systems Officer</td>
+      <td>10+ years</td>
+      <td>MORTGAGE</td>
+      <td>110000.0</td>
+      <td>Source Verified</td>
+      <td>Dec-2015</td>
+      <td>Current</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanD...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>68476807</td>
+      <td>NaN</td>
+      <td>10400.0</td>
+      <td>10400.0</td>
+      <td>10400.0</td>
+      <td>60 months</td>
+      <td>22.45</td>
+      <td>289.91</td>
+      <td>F</td>
+      <td>F1</td>
+      <td>Contract Specialist</td>
+      <td>3 years</td>
+      <td>MORTGAGE</td>
+      <td>104433.0</td>
+      <td>Source Verified</td>
+      <td>Dec-2015</td>
+      <td>Fully Paid</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanD...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 151 columns</p>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">crudo</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>member_id</th>
+      <th>loan_amnt</th>
+      <th>funded_amnt</th>
+      <th>funded_amnt_inv</th>
+      <th>term</th>
+      <th>int_rate</th>
+      <th>installment</th>
+      <th>grade</th>
+      <th>sub_grade</th>
+      <th>emp_title</th>
+      <th>emp_length</th>
+      <th>home_ownership</th>
+      <th>annual_inc</th>
+      <th>verification_status</th>
+      <th>issue_d</th>
+      <th>loan_status</th>
+      <th>pymnt_plan</th>
+      <th>url</th>
+      <th>desc</th>
+      <th>...</th>
+      <th>hardship_status</th>
+      <th>deferral_term</th>
+      <th>hardship_amount</th>
+      <th>hardship_start_date</th>
+      <th>hardship_end_date</th>
+      <th>payment_plan_start_date</th>
+      <th>hardship_length</th>
+      <th>hardship_dpd</th>
+      <th>hardship_loan_status</th>
+      <th>orig_projected_additional_accrued_interest</th>
+      <th>hardship_payoff_balance_amount</th>
+      <th>hardship_last_payment_amount</th>
+      <th>disbursement_method</th>
+      <th>debt_settlement_flag</th>
+      <th>debt_settlement_flag_date</th>
+      <th>settlement_status</th>
+      <th>settlement_date</th>
+      <th>settlement_amount</th>
+      <th>settlement_percentage</th>
+      <th>settlement_term</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2260696</th>
+      <td>88985880</td>
+      <td>NaN</td>
+      <td>40000.0</td>
+      <td>40000.0</td>
+      <td>40000.0</td>
+      <td>60 months</td>
+      <td>10.49</td>
+      <td>859.56</td>
+      <td>B</td>
+      <td>B3</td>
+      <td>Vice President</td>
+      <td>9 years</td>
+      <td>MORTGAGE</td>
+      <td>227000.0</td>
+      <td>Verified</td>
+      <td>Oct-2016</td>
+      <td>Current</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanD...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2260697</th>
+      <td>88224441</td>
+      <td>NaN</td>
+      <td>24000.0</td>
+      <td>24000.0</td>
+      <td>24000.0</td>
+      <td>60 months</td>
+      <td>14.49</td>
+      <td>564.56</td>
+      <td>C</td>
+      <td>C4</td>
+      <td>Program Manager</td>
+      <td>6 years</td>
+      <td>RENT</td>
+      <td>110000.0</td>
+      <td>Not Verified</td>
+      <td>Oct-2016</td>
+      <td>Charged Off</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanD...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>Y</td>
+      <td>Mar-2019</td>
+      <td>ACTIVE</td>
+      <td>Mar-2019</td>
+      <td>10000.0</td>
+      <td>44.82</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2260698</th>
+      <td>88215728</td>
+      <td>NaN</td>
+      <td>14000.0</td>
+      <td>14000.0</td>
+      <td>14000.0</td>
+      <td>60 months</td>
+      <td>14.49</td>
+      <td>329.33</td>
+      <td>C</td>
+      <td>C4</td>
+      <td>Customer Service Technician</td>
+      <td>10+ years</td>
+      <td>MORTGAGE</td>
+      <td>95000.0</td>
+      <td>Verified</td>
+      <td>Oct-2016</td>
+      <td>Current</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanD...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2260699</th>
+      <td>Total amount funded in policy code 1...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2260700</th>
+      <td>Total amount funded in policy code 2...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 151 columns</p>
+</div></div></div>
+</div>
+<p>Las primeras filas se leen correctamente. Las dos últimas no son préstamos: son líneas de
+totales que Lending Club añadió al final del archivo («Total amount funded in policy code 1/2»),
+con todas las demás columnas vacías. A ellas se suman otras filas con <code class="docutils literal notranslate"><span class="pre">id</span></code> no numérico dentro del
+archivo. Se identifican por tener <code class="docutils literal notranslate"><span class="pre">loan_status</span></code> vacío.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">id_num</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">crudo</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Filas con id no numérico:"</span><span class="p">,</span> <span class="n">id_num</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Filas con loan_status vacío:"</span><span class="p">,</span> <span class="n">crudo</span><span class="p">[</span><span class="s2">"loan_status"</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Coinciden:"</span><span class="p">,</span> <span class="p">(</span><span class="n">id_num</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span> <span class="o">==</span> <span class="n">crudo</span><span class="p">[</span><span class="s2">"loan_status"</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">())</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Filas con id no numérico: 33
+Filas con loan_status vacío: 33
+Coinciden: True
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="estado-del-prestamo-y-definicion-de-la-poblacion">
+<h2>1.3 Estado del préstamo y definición de la población<a class="headerlink" href="#estado-del-prestamo-y-definicion-de-la-poblacion" title="Link to this heading">#</a></h2>
+<p>La variable objetivo se construye a partir de <code class="docutils literal notranslate"><span class="pre">loan_status</span></code>. El enunciado fija
+0 = <em>Fully Paid</em> y 1 = <em>Charged Off</em>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">estados</span> <span class="o">=</span> <span class="n">crudo</span><span class="p">[</span><span class="s2">"loan_status"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">"n"</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+<span class="n">estados</span><span class="p">[</span><span class="s2">"%"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">estados</span><span class="p">[</span><span class="s2">"n"</span><span class="p">]</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">crudo</span><span class="p">))</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">estados</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>n</th>
+      <th>%</th>
+    </tr>
+    <tr>
+      <th>loan_status</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Fully Paid</th>
+      <td>1076751</td>
+      <td>47.63</td>
+    </tr>
+    <tr>
+      <th>Current</th>
+      <td>878317</td>
+      <td>38.85</td>
+    </tr>
+    <tr>
+      <th>Charged Off</th>
+      <td>268559</td>
+      <td>11.88</td>
+    </tr>
+    <tr>
+      <th>Late (31-120 days)</th>
+      <td>21467</td>
+      <td>0.95</td>
+    </tr>
+    <tr>
+      <th>In Grace Period</th>
+      <td>8436</td>
+      <td>0.37</td>
+    </tr>
+    <tr>
+      <th>Late (16-30 days)</th>
+      <td>4349</td>
+      <td>0.19</td>
+    </tr>
+    <tr>
+      <th>Does not meet the credit policy. Status:Fully Paid</th>
+      <td>1988</td>
+      <td>0.09</td>
+    </tr>
+    <tr>
+      <th>Does not meet the credit policy. Status:Charged Off</th>
+      <td>761</td>
+      <td>0.03</td>
+    </tr>
+    <tr>
+      <th>Default</th>
+      <td>40</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>NaN</th>
+      <td>33</td>
+      <td>0.00</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Solo los préstamos cerrados tienen un desenlace observado. Los estados <em>Current</em>, <em>In Grace
+Period</em>, <em>Late</em> y <em>Default</em> corresponden a préstamos que seguían vigentes en la fecha de
+extracción de los datos (primer trimestre de 2019, según las fechas más recientes de
+<code class="docutils literal notranslate"><span class="pre">last_credit_pull_d</span></code>; 2018Q4 es el último trimestre de emisión incluido):
+asignarles 0, como haría literalmente <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">if</span> <span class="pre">x</span> <span class="pre">==</span> <span class="pre">&quot;Charged</span> <span class="pre">Off&quot;</span> <span class="pre">else</span> <span class="pre">0</span></code>, los contaría como pagados
+sin saber si lo serán. Por eso la población de estudio son los préstamos con desenlace final:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Estado original</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">default</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Fully Paid</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Does not meet the credit policy. Status:Fully Paid</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>Charged Off</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>Does not meet the credit policy. Status:Charged Off</p></td>
+<td><p>1</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Las dos categorías <em>Does not meet the credit policy</em> (2.749 préstamos) son préstamos
+cerrados con el mismo desenlace y se conservan. Esta definición no es un muestreo: se usan
+<strong>todas</strong> las filas con desenlace conocido, sin submuestrear ninguna clase.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mapa</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"Fully Paid"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"Does not meet the credit policy. Status:Fully Paid"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"Charged Off"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"Does not meet the credit policy. Status:Charged Off"</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">crudo</span><span class="p">[</span><span class="n">crudo</span><span class="p">[</span><span class="s2">"loan_status"</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">mapa</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"default"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"loan_status"</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">mapa</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"int8"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"int64"</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">crudo</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Préstamos cerrados: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> filas x </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columnas"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"id único:"</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span><span class="o">.</span><span class="n">is_unique</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Préstamos cerrados: 1,348,059 filas x 152 columnas
+id único: True
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="tipos-de-datos-y-valores-nulos-info">
+<h2>1.4 Tipos de datos y valores nulos: <code class="docutils literal notranslate"><span class="pre">info()</span></code><a class="headerlink" href="#tipos-de-datos-y-valores-nulos-info" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;class 'pandas.core.frame.DataFrame'&gt;
+Index: 1348059 entries, 0 to 2260697
+Data columns (total 152 columns):
+ #    Column                                      Non-Null Count    Dtype  
+---   ------                                      --------------    -----  
+ 0    id                                          1348059 non-null  int64  
+ 1    member_id                                   0 non-null        float64
+ 2    loan_amnt                                   1348059 non-null  float64
+ 3    funded_amnt                                 1348059 non-null  float64
+ 4    funded_amnt_inv                             1348059 non-null  float64
+ 5    term                                        1348059 non-null  object 
+ 6    int_rate                                    1348059 non-null  float64
+ 7    installment                                 1348059 non-null  float64
+ 8    grade                                       1348059 non-null  object 
+ 9    sub_grade                                   1348059 non-null  object 
+ 10   emp_title                                   1262115 non-null  object 
+ 11   emp_length                                  1269514 non-null  object 
+ 12   home_ownership                              1348059 non-null  object 
+ 13   annual_inc                                  1348055 non-null  float64
+ 14   verification_status                         1348059 non-null  object 
+ 15   issue_d                                     1348059 non-null  object 
+ 16   loan_status                                 1348059 non-null  object 
+ 17   pymnt_plan                                  1348059 non-null  object 
+ 18   url                                         1348059 non-null  object 
+ 19   desc                                        125953 non-null   object 
+ 20   purpose                                     1348059 non-null  object 
+ 21   title                                       1331397 non-null  object 
+ 22   zip_code                                    1348058 non-null  object 
+ 23   addr_state                                  1348059 non-null  object 
+ 24   dti                                         1347685 non-null  float64
+ 25   delinq_2yrs                                 1348030 non-null  float64
+ 26   earliest_cr_line                            1348030 non-null  object 
+ 27   fico_range_low                              1348059 non-null  float64
+ 28   fico_range_high                             1348059 non-null  float64
+ 29   inq_last_6mths                              1348029 non-null  float64
+ 30   mths_since_last_delinq                      668117 non-null   float64
+ 31   mths_since_last_record                      229415 non-null   float64
+ 32   open_acc                                    1348030 non-null  float64
+ 33   pub_rec                                     1348030 non-null  float64
+ 34   revol_bal                                   1348059 non-null  float64
+ 35   revol_util                                  1347162 non-null  float64
+ 36   total_acc                                   1348030 non-null  float64
+ 37   initial_list_status                         1348059 non-null  object 
+ 38   out_prncp                                   1348059 non-null  float64
+ 39   out_prncp_inv                               1348059 non-null  float64
+ 40   total_pymnt                                 1348059 non-null  float64
+ 41   total_pymnt_inv                             1348059 non-null  float64
+ 42   total_rec_prncp                             1348059 non-null  float64
+ 43   total_rec_int                               1348059 non-null  float64
+ 44   total_rec_late_fee                          1348059 non-null  float64
+ 45   recoveries                                  1348059 non-null  float64
+ 46   collection_recovery_fee                     1348059 non-null  float64
+ 47   last_pymnt_d                                1345734 non-null  object 
+ 48   last_pymnt_amnt                             1348059 non-null  float64
+ 49   next_pymnt_d                                2749 non-null     object 
+ 50   last_credit_pull_d                          1348002 non-null  object 
+ 51   last_fico_range_high                        1348059 non-null  float64
+ 52   last_fico_range_low                         1348059 non-null  float64
+ 53   collections_12_mths_ex_med                  1347914 non-null  float64
+ 54   mths_since_last_major_derog                 353750 non-null   float64
+ 55   policy_code                                 1348059 non-null  float64
+ 56   application_type                            1348059 non-null  object 
+ 57   annual_inc_joint                            25800 non-null    float64
+ 58   dti_joint                                   25797 non-null    float64
+ 59   verification_status_joint                   25595 non-null    object 
+ 60   acc_now_delinq                              1348030 non-null  float64
+ 61   tot_coll_amt                                1277783 non-null  float64
+ 62   tot_cur_bal                                 1277783 non-null  float64
+ 63   open_acc_6m                                 537597 non-null   float64
+ 64   open_act_il                                 537598 non-null   float64
+ 65   open_il_12m                                 537598 non-null   float64
+ 66   open_il_24m                                 537598 non-null   float64
+ 67   mths_since_rcnt_il                          523382 non-null   float64
+ 68   total_bal_il                                537598 non-null   float64
+ 69   il_util                                     465016 non-null   float64
+ 70   open_rv_12m                                 537598 non-null   float64
+ 71   open_rv_24m                                 537598 non-null   float64
+ 72   max_bal_bc                                  537598 non-null   float64
+ 73   all_util                                    537545 non-null   float64
+ 74   total_rev_hi_lim                            1277783 non-null  float64
+ 75   inq_fi                                      537598 non-null   float64
+ 76   total_cu_tl                                 537597 non-null   float64
+ 77   inq_last_12m                                537597 non-null   float64
+ 78   acc_open_past_24mths                        1298029 non-null  float64
+ 79   avg_cur_bal                                 1277761 non-null  float64
+ 80   bc_open_to_buy                              1284167 non-null  float64
+ 81   bc_util                                     1283398 non-null  float64
+ 82   chargeoff_within_12_mths                    1347914 non-null  float64
+ 83   delinq_amnt                                 1348030 non-null  float64
+ 84   mo_sin_old_il_acct                          1239735 non-null  float64
+ 85   mo_sin_old_rev_tl_op                        1277782 non-null  float64
+ 86   mo_sin_rcnt_rev_tl_op                       1277782 non-null  float64
+ 87   mo_sin_rcnt_tl                              1277783 non-null  float64
+ 88   mort_acc                                    1298029 non-null  float64
+ 89   mths_since_recent_bc                        1285089 non-null  float64
+ 90   mths_since_recent_bc_dlq                    319020 non-null   float64
+ 91   mths_since_recent_inq                       1171239 non-null  float64
+ 92   mths_since_recent_revol_delinq              449962 non-null   float64
+ 93   num_accts_ever_120_pd                       1277783 non-null  float64
+ 94   num_actv_bc_tl                              1277783 non-null  float64
+ 95   num_actv_rev_tl                             1277783 non-null  float64
+ 96   num_bc_sats                                 1289469 non-null  float64
+ 97   num_bc_tl                                   1277783 non-null  float64
+ 98   num_il_tl                                   1277783 non-null  float64
+ 99   num_op_rev_tl                               1277783 non-null  float64
+ 100  num_rev_accts                               1277782 non-null  float64
+ 101  num_rev_tl_bal_gt_0                         1277783 non-null  float64
+ 102  num_sats                                    1289469 non-null  float64
+ 103  num_tl_120dpd_2m                            1227909 non-null  float64
+ 104  num_tl_30dpd                                1277783 non-null  float64
+ 105  num_tl_90g_dpd_24m                          1277783 non-null  float64
+ 106  num_tl_op_past_12m                          1277783 non-null  float64
+ 107  pct_tl_nvr_dlq                              1277629 non-null  float64
+ 108  percent_bc_gt_75                            1283755 non-null  float64
+ 109  pub_rec_bankruptcies                        1346694 non-null  float64
+ 110  tax_liens                                   1347954 non-null  float64
+ 111  tot_hi_cred_lim                             1277783 non-null  float64
+ 112  total_bal_ex_mort                           1298029 non-null  float64
+ 113  total_bc_limit                              1298029 non-null  float64
+ 114  total_il_high_credit_limit                  1277783 non-null  float64
+ 115  revol_bal_joint                             18629 non-null    float64
+ 116  sec_app_fico_range_low                      18630 non-null    float64
+ 117  sec_app_fico_range_high                     18630 non-null    float64
+ 118  sec_app_earliest_cr_line                    18630 non-null    object 
+ 119  sec_app_inq_last_6mths                      18630 non-null    float64
+ 120  sec_app_mort_acc                            18630 non-null    float64
+ 121  sec_app_open_acc                            18630 non-null    float64
+ 122  sec_app_revol_util                          18302 non-null    float64
+ 123  sec_app_open_act_il                         18630 non-null    float64
+ 124  sec_app_num_rev_accts                       18630 non-null    float64
+ 125  sec_app_chargeoff_within_12_mths            18630 non-null    float64
+ 126  sec_app_collections_12_mths_ex_med          18630 non-null    float64
+ 127  sec_app_mths_since_last_major_derog         6645 non-null     float64
+ 128  hardship_flag                               1348059 non-null  object 
+ 129  hardship_type                               5754 non-null     object 
+ 130  hardship_reason                             5754 non-null     object 
+ 131  hardship_status                             5754 non-null     object 
+ 132  deferral_term                               5754 non-null     float64
+ 133  hardship_amount                             5754 non-null     float64
+ 134  hardship_start_date                         5754 non-null     object 
+ 135  hardship_end_date                           5754 non-null     object 
+ 136  payment_plan_start_date                     5754 non-null     object 
+ 137  hardship_length                             5754 non-null     float64
+ 138  hardship_dpd                                5754 non-null     float64
+ 139  hardship_loan_status                        5754 non-null     object 
+ 140  orig_projected_additional_accrued_interest  3759 non-null     float64
+ 141  hardship_payoff_balance_amount              5754 non-null     float64
+ 142  hardship_last_payment_amount                5754 non-null     float64
+ 143  disbursement_method                         1348059 non-null  object 
+ 144  debt_settlement_flag                        1348059 non-null  object 
+ 145  debt_settlement_flag_date                   33286 non-null    object 
+ 146  settlement_status                           33286 non-null    object 
+ 147  settlement_date                             33286 non-null    object 
+ 148  settlement_amount                           33286 non-null    float64
+ 149  settlement_percentage                       33286 non-null    float64
+ 150  settlement_term                             33286 non-null    float64
+ 151  default                                     1348059 non-null  int8   
+dtypes: float64(113), int64(1), int8(1), object(37)
+memory usage: 1.5+ GB
+</pre></div>
+</div>
+</div>
+</div>
+<p>De las 152 columnas (151 originales y <code class="docutils literal notranslate"><span class="pre">default</span></code>), 115 son numéricas (incluidas <code class="docutils literal notranslate"><span class="pre">id</span></code> y <code class="docutils literal notranslate"><span class="pre">default</span></code>)
+y 37 de texto. Varias
+columnas de texto son en realidad numéricas u ordinales (<code class="docutils literal notranslate"><span class="pre">term</span></code>, <code class="docutils literal notranslate"><span class="pre">emp_length</span></code>), que se convierten
+a número en la sección 1.6, o fechas (<code class="docutils literal notranslate"><span class="pre">issue_d</span></code>, <code class="docutils literal notranslate"><span class="pre">earliest_cr_line</span></code>), a partir de las cuales esa
+sección deriva <code class="docutils literal notranslate"><span class="pre">antig_credito_meses</span></code> e <code class="docutils literal notranslate"><span class="pre">issue_year</span></code>. Hay tres grupos de columnas
+que no deben entrar al modelo:</p>
+<ul class="simple">
+<li><p><strong>Identificadores y texto libre</strong>: <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">member_id</span></code> (100 % vacío), <code class="docutils literal notranslate"><span class="pre">url</span></code>, <code class="docutils literal notranslate"><span class="pre">desc</span></code>, <code class="docutils literal notranslate"><span class="pre">title</span></code>,
+<code class="docutils literal notranslate"><span class="pre">emp_title</span></code>, <code class="docutils literal notranslate"><span class="pre">zip_code</span></code>.</p></li>
+<li><p><strong>Información posterior a la originación (fuga de información, 40 columnas listadas abajo)</strong>:
+montos efectivamente financiados (<code class="docutils literal notranslate"><span class="pre">funded_amnt</span></code>, <code class="docutils literal notranslate"><span class="pre">funded_amnt_inv</span></code>), pagos recibidos
+(<code class="docutils literal notranslate"><span class="pre">total_pymnt</span></code>, <code class="docutils literal notranslate"><span class="pre">total_rec_prncp</span></code>, <code class="docutils literal notranslate"><span class="pre">recoveries</span></code>…), saldo pendiente, último y próximo pago,
+última consulta y FICO más recientes, <code class="docutils literal notranslate"><span class="pre">pymnt_plan</span></code> y variables de <em>hardship</em> y <em>settlement</em>.
+Solo se conocen durante la vida del
+préstamo; un modelo que las use «predice» el default con información del propio default.</p></li>
+<li><p><strong>Columnas de solicitudes conjuntas o de coprestatario</strong>, vacías en más del 98 % de las filas.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Columnas con posible fuga de información (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">FUGA</span><span class="p">)</span><span class="si">}</span><span class="s2">):"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">FUGA</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Columnas con posible fuga de información (40):
+funded_amnt, funded_amnt_inv, out_prncp, out_prncp_inv, total_pymnt, total_pymnt_inv, total_rec_prncp, total_rec_int, total_rec_late_fee, recoveries, collection_recovery_fee, last_pymnt_d, last_pymnt_amnt, next_pymnt_d, last_credit_pull_d, last_fico_range_high, last_fico_range_low, pymnt_plan, debt_settlement_flag, debt_settlement_flag_date, settlement_status, settlement_date, settlement_amount, settlement_percentage, settlement_term, hardship_flag, hardship_type, hardship_reason, hardship_status, deferral_term, hardship_amount, hardship_start_date, hardship_end_date, payment_plan_start_date, hardship_length, hardship_dpd, hardship_loan_status, orig_projected_additional_accrued_interest, hardship_payoff_balance_amount, hardship_last_payment_amount
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="estadisticas-descriptivas-describe">
+<h2>1.5 Estadísticas descriptivas: <code class="docutils literal notranslate"><span class="pre">describe()</span></code><a class="headerlink" href="#estadisticas-descriptivas-describe" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>mean</th>
+      <th>std</th>
+      <th>min</th>
+      <th>25%</th>
+      <th>50%</th>
+      <th>75%</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>id</th>
+      <td>1348059.0</td>
+      <td>56230893.72</td>
+      <td>38405042.67</td>
+      <td>54734.00</td>
+      <td>19726640.50</td>
+      <td>57673953.00</td>
+      <td>84505285.50</td>
+      <td>1.456364e+08</td>
+    </tr>
+    <tr>
+      <th>member_id</th>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>loan_amnt</th>
+      <td>1348059.0</td>
+      <td>14409.00</td>
+      <td>8716.09</td>
+      <td>500.00</td>
+      <td>7975.00</td>
+      <td>12000.00</td>
+      <td>20000.00</td>
+      <td>4.000000e+04</td>
+    </tr>
+    <tr>
+      <th>funded_amnt</th>
+      <td>1348059.0</td>
+      <td>14400.19</td>
+      <td>8712.20</td>
+      <td>500.00</td>
+      <td>7950.00</td>
+      <td>12000.00</td>
+      <td>20000.00</td>
+      <td>4.000000e+04</td>
+    </tr>
+    <tr>
+      <th>funded_amnt_inv</th>
+      <td>1348059.0</td>
+      <td>14372.53</td>
+      <td>8718.31</td>
+      <td>0.00</td>
+      <td>7800.00</td>
+      <td>12000.00</td>
+      <td>20000.00</td>
+      <td>4.000000e+04</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>hardship_last_payment_amount</th>
+      <td>5754.0</td>
+      <td>184.69</td>
+      <td>196.46</td>
+      <td>0.01</td>
+      <td>39.57</td>
+      <td>120.97</td>
+      <td>267.60</td>
+      <td>1.407860e+03</td>
+    </tr>
+    <tr>
+      <th>settlement_amount</th>
+      <td>33286.0</td>
+      <td>5029.48</td>
+      <td>3684.58</td>
+      <td>44.21</td>
+      <td>2228.13</td>
+      <td>4174.59</td>
+      <td>6883.48</td>
+      <td>3.360100e+04</td>
+    </tr>
+    <tr>
+      <th>settlement_percentage</th>
+      <td>33286.0</td>
+      <td>47.69</td>
+      <td>7.31</td>
+      <td>0.20</td>
+      <td>45.00</td>
+      <td>45.00</td>
+      <td>50.00</td>
+      <td>5.213500e+02</td>
+    </tr>
+    <tr>
+      <th>settlement_term</th>
+      <td>33286.0</td>
+      <td>13.15</td>
+      <td>8.24</td>
+      <td>0.00</td>
+      <td>6.00</td>
+      <td>14.00</td>
+      <td>18.00</td>
+      <td>1.810000e+02</td>
+    </tr>
+    <tr>
+      <th>default</th>
+      <td>1348059.0</td>
+      <td>0.20</td>
+      <td>0.40</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1.000000e+00</td>
+    </tr>
+  </tbody>
+</table>
+<p>115 rows × 8 columns</p>
+</div></div></div>
+</div>
+<p>La tabla completa tiene 115 filas y pandas solo muestra las primeras y las últimas. Las variables
+que más interesan para el modelo se resumen aparte:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[[</span><span class="s2">"loan_amnt"</span><span class="p">,</span> <span class="s2">"annual_inc"</span><span class="p">,</span> <span class="s2">"revol_bal"</span><span class="p">,</span> <span class="s2">"tot_cur_bal"</span><span class="p">,</span> <span class="s2">"dti"</span><span class="p">,</span> <span class="s2">"out_prncp"</span><span class="p">]]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>mean</th>
+      <th>std</th>
+      <th>min</th>
+      <th>25%</th>
+      <th>50%</th>
+      <th>75%</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>loan_amnt</th>
+      <td>1348059.0</td>
+      <td>14409.00</td>
+      <td>8716.09</td>
+      <td>500.0</td>
+      <td>7975.00</td>
+      <td>12000.00</td>
+      <td>20000.00</td>
+      <td>40000.0</td>
+    </tr>
+    <tr>
+      <th>annual_inc</th>
+      <td>1348055.0</td>
+      <td>76237.80</td>
+      <td>69922.99</td>
+      <td>0.0</td>
+      <td>45750.06</td>
+      <td>65000.00</td>
+      <td>90000.00</td>
+      <td>10999200.0</td>
+    </tr>
+    <tr>
+      <th>revol_bal</th>
+      <td>1348059.0</td>
+      <td>16270.87</td>
+      <td>22477.76</td>
+      <td>0.0</td>
+      <td>5936.00</td>
+      <td>11130.00</td>
+      <td>19758.00</td>
+      <td>2904836.0</td>
+    </tr>
+    <tr>
+      <th>tot_cur_bal</th>
+      <td>1277783.0</td>
+      <td>141133.75</td>
+      <td>157547.77</td>
+      <td>0.0</td>
+      <td>29423.00</td>
+      <td>80231.00</td>
+      <td>210715.00</td>
+      <td>8000078.0</td>
+    </tr>
+    <tr>
+      <th>dti</th>
+      <td>1347685.0</td>
+      <td>18.27</td>
+      <td>11.16</td>
+      <td>-1.0</td>
+      <td>11.79</td>
+      <td>17.61</td>
+      <td>24.05</td>
+      <td>999.0</td>
+    </tr>
+    <tr>
+      <th>out_prncp</th>
+      <td>1348059.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>El resumen confirma escalas muy distintas (de proporciones a saldos de millones de dólares) y
+colas largas en ingresos y saldos: la media de <code class="docutils literal notranslate"><span class="pre">annual_inc</span></code> (76.238 dólares) supera a su mediana
+(65.000) y el máximo llega a 11 millones; lo mismo ocurre con <code class="docutils literal notranslate"><span class="pre">revol_bal</span></code> (máximo de 2,9 millones)
+y <code class="docutils literal notranslate"><span class="pre">tot_cur_bal</span></code> (8 millones). <code class="docutils literal notranslate"><span class="pre">dti</span></code> tiene un mínimo de −1 y un máximo de 999, códigos que no son
+razones deuda/ingreso válidas. <code class="docutils literal notranslate"><span class="pre">out_prncp</span></code> vale 0 en todos los préstamos cerrados, como es de
+esperar. El capítulo 2 examina cada variable.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">"object"</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>unique</th>
+      <th>top</th>
+      <th>freq</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>term</th>
+      <td>1348059</td>
+      <td>2</td>
+      <td>36 months</td>
+      <td>1023181</td>
+    </tr>
+    <tr>
+      <th>grade</th>
+      <td>1348059</td>
+      <td>7</td>
+      <td>B</td>
+      <td>393095</td>
+    </tr>
+    <tr>
+      <th>sub_grade</th>
+      <td>1348059</td>
+      <td>35</td>
+      <td>C1</td>
+      <td>85616</td>
+    </tr>
+    <tr>
+      <th>emp_title</th>
+      <td>1262115</td>
+      <td>379858</td>
+      <td>Teacher</td>
+      <td>21268</td>
+    </tr>
+    <tr>
+      <th>emp_length</th>
+      <td>1269514</td>
+      <td>11</td>
+      <td>10+ years</td>
+      <td>442669</td>
+    </tr>
+    <tr>
+      <th>home_ownership</th>
+      <td>1348059</td>
+      <td>6</td>
+      <td>MORTGAGE</td>
+      <td>666835</td>
+    </tr>
+    <tr>
+      <th>verification_status</th>
+      <td>1348059</td>
+      <td>3</td>
+      <td>Source Verified</td>
+      <td>521563</td>
+    </tr>
+    <tr>
+      <th>issue_d</th>
+      <td>1348059</td>
+      <td>139</td>
+      <td>Mar-2016</td>
+      <td>48937</td>
+    </tr>
+    <tr>
+      <th>loan_status</th>
+      <td>1348059</td>
+      <td>4</td>
+      <td>Fully Paid</td>
+      <td>1076751</td>
+    </tr>
+    <tr>
+      <th>pymnt_plan</th>
+      <td>1348059</td>
+      <td>1</td>
+      <td>n</td>
+      <td>1348059</td>
+    </tr>
+    <tr>
+      <th>url</th>
+      <td>1348059</td>
+      <td>1348059</td>
+      <td>https://lendingclub.com/browse/loanD...</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>desc</th>
+      <td>125953</td>
+      <td>124398</td>
+      <td></td>
+      <td>251</td>
+    </tr>
+    <tr>
+      <th>purpose</th>
+      <td>1348059</td>
+      <td>14</td>
+      <td>debt_consolidation</td>
+      <td>781421</td>
+    </tr>
+    <tr>
+      <th>title</th>
+      <td>1331397</td>
+      <td>63151</td>
+      <td>Debt consolidation</td>
+      <td>660973</td>
+    </tr>
+    <tr>
+      <th>zip_code</th>
+      <td>1348058</td>
+      <td>945</td>
+      <td>945xx</td>
+      <td>15018</td>
+    </tr>
+    <tr>
+      <th>addr_state</th>
+      <td>1348059</td>
+      <td>51</td>
+      <td>CA</td>
+      <td>196852</td>
+    </tr>
+    <tr>
+      <th>earliest_cr_line</th>
+      <td>1348030</td>
+      <td>739</td>
+      <td>Aug-2001</td>
+      <td>9402</td>
+    </tr>
+    <tr>
+      <th>initial_list_status</th>
+      <td>1348059</td>
+      <td>2</td>
+      <td>w</td>
+      <td>784010</td>
+    </tr>
+    <tr>
+      <th>last_pymnt_d</th>
+      <td>1345734</td>
+      <td>136</td>
+      <td>Aug-2018</td>
+      <td>39615</td>
+    </tr>
+    <tr>
+      <th>next_pymnt_d</th>
+      <td>2749</td>
+      <td>98</td>
+      <td>Mar-2011</td>
+      <td>107</td>
+    </tr>
+    <tr>
+      <th>last_credit_pull_d</th>
+      <td>1348002</td>
+      <td>141</td>
+      <td>Mar-2019</td>
+      <td>471440</td>
+    </tr>
+    <tr>
+      <th>application_type</th>
+      <td>1348059</td>
+      <td>2</td>
+      <td>Individual</td>
+      <td>1322259</td>
+    </tr>
+    <tr>
+      <th>verification_status_joint</th>
+      <td>25595</td>
+      <td>3</td>
+      <td>Not Verified</td>
+      <td>14872</td>
+    </tr>
+    <tr>
+      <th>sec_app_earliest_cr_line</th>
+      <td>18630</td>
+      <td>570</td>
+      <td>Aug-2006</td>
+      <td>198</td>
+    </tr>
+    <tr>
+      <th>hardship_flag</th>
+      <td>1348059</td>
+      <td>1</td>
+      <td>N</td>
+      <td>1348059</td>
+    </tr>
+    <tr>
+      <th>hardship_type</th>
+      <td>5754</td>
+      <td>1</td>
+      <td>INTEREST ONLY-3 MONTHS DEFERRAL</td>
+      <td>5754</td>
+    </tr>
+    <tr>
+      <th>hardship_reason</th>
+      <td>5754</td>
+      <td>9</td>
+      <td>NATURAL_DISASTER</td>
+      <td>1619</td>
+    </tr>
+    <tr>
+      <th>hardship_status</th>
+      <td>5754</td>
+      <td>2</td>
+      <td>COMPLETED</td>
+      <td>3759</td>
+    </tr>
+    <tr>
+      <th>hardship_start_date</th>
+      <td>5754</td>
+      <td>26</td>
+      <td>Sep-2017</td>
+      <td>1493</td>
+    </tr>
+    <tr>
+      <th>hardship_end_date</th>
+      <td>5754</td>
+      <td>25</td>
+      <td>Dec-2017</td>
+      <td>1108</td>
+    </tr>
+    <tr>
+      <th>payment_plan_start_date</th>
+      <td>5754</td>
+      <td>25</td>
+      <td>Oct-2017</td>
+      <td>1065</td>
+    </tr>
+    <tr>
+      <th>hardship_loan_status</th>
+      <td>5754</td>
+      <td>5</td>
+      <td>Late (16-30 days)</td>
+      <td>2596</td>
+    </tr>
+    <tr>
+      <th>disbursement_method</th>
+      <td>1348059</td>
+      <td>2</td>
+      <td>Cash</td>
+      <td>1341159</td>
+    </tr>
+    <tr>
+      <th>debt_settlement_flag</th>
+      <td>1348059</td>
+      <td>2</td>
+      <td>N</td>
+      <td>1314773</td>
+    </tr>
+    <tr>
+      <th>debt_settlement_flag_date</th>
+      <td>33286</td>
+      <td>83</td>
+      <td>Jan-2019</td>
+      <td>2451</td>
+    </tr>
+    <tr>
+      <th>settlement_status</th>
+      <td>33286</td>
+      <td>3</td>
+      <td>COMPLETE</td>
+      <td>14505</td>
+    </tr>
+    <tr>
+      <th>settlement_date</th>
+      <td>33286</td>
+      <td>90</td>
+      <td>Jan-2019</td>
+      <td>1635</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</section>
+<section id="variables-derivadas">
+<h2>1.6 Variables derivadas<a class="headerlink" href="#variables-derivadas" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">term</span></code>: texto « 36 months» / « 60 months» a número de meses.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">emp_length</span></code>: «&lt; 1 year» = 0, «1 year» = 1, …, «10+ years» = 10; se conserva el faltante.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">antig_credito_meses</span></code>: meses entre la primera línea de crédito (<code class="docutils literal notranslate"><span class="pre">earliest_cr_line</span></code>) y la
+emisión del préstamo (<code class="docutils literal notranslate"><span class="pre">issue_d</span></code>). Ambas fechas se conocen al originar el préstamo.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">issue_year</span></code>: año de emisión, solo para el análisis descriptivo.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s2">"term"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"term"</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="sa">r</span><span class="s2">"(\d+)"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float64"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"emp_length"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">emp_length_a_numero</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"emp_length"</span><span class="p">])</span>
+<span class="n">emision</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"issue_d"</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"%b-%Y"</span><span class="p">)</span>
+<span class="n">primera</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"earliest_cr_line"</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"%b-%Y"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"antig_credito_meses"</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">emision</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span> <span class="o">-</span> <span class="n">primera</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span><span class="p">)</span> <span class="o">*</span> <span class="mi">12</span>
+                             <span class="o">+</span> <span class="p">(</span><span class="n">emision</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span> <span class="o">-</span> <span class="n">primera</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float64"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"issue_year"</span><span class="p">]</span> <span class="o">=</span> <span class="n">emision</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"int16"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[[</span><span class="s2">"term"</span><span class="p">,</span> <span class="s2">"emp_length"</span><span class="p">,</span> <span class="s2">"antig_credito_meses"</span><span class="p">,</span> <span class="s2">"issue_year"</span><span class="p">]]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>mean</th>
+      <th>std</th>
+      <th>min</th>
+      <th>25%</th>
+      <th>50%</th>
+      <th>75%</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>term</th>
+      <td>1348059.0</td>
+      <td>41.78</td>
+      <td>10.26</td>
+      <td>36.0</td>
+      <td>36.0</td>
+      <td>36.0</td>
+      <td>36.0</td>
+      <td>60.0</td>
+    </tr>
+    <tr>
+      <th>emp_length</th>
+      <td>1269514.0</td>
+      <td>5.96</td>
+      <td>3.69</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>10.0</td>
+      <td>10.0</td>
+    </tr>
+    <tr>
+      <th>antig_credito_meses</th>
+      <td>1348030.0</td>
+      <td>195.01</td>
+      <td>90.10</td>
+      <td>6.0</td>
+      <td>134.0</td>
+      <td>177.0</td>
+      <td>240.0</td>
+      <td>999.0</td>
+    </tr>
+    <tr>
+      <th>issue_year</th>
+      <td>1348059.0</td>
+      <td>2014.96</td>
+      <td>1.66</td>
+      <td>2007.0</td>
+      <td>2014.0</td>
+      <td>2015.0</td>
+      <td>2016.0</td>
+      <td>2018.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</section>
+<section id="prestamos-por-ano-de-emision">
+<h2>1.7 Préstamos por año de emisión<a class="headerlink" href="#prestamos-por-ano-de-emision" title="Link to this heading">#</a></h2>
+<p>El conjunto cubre préstamos emitidos entre 2007 y 2018. Como solo se conservan préstamos cerrados,
+las cohortes recientes están incompletas: de un préstamo emitido en 2016-2018 solo se observa el
+desenlace si terminó antes de la extracción de los datos (primer trimestre de 2019), es decir,
+si entró en default pronto o si se prepagó. La
+tabla lo refleja: la tasa de default sube a 23 % en las cohortes de 2016 y 2017, donde pesan los
+defaults tempranos, y cae a 15,8 % en 2018, donde casi solo han terminado los préstamos
+prepagados. Este sesgo de selección por cohorte no afecta la comparación entre modelos, que se
+evalúan sobre la misma población, pero sí limita la extrapolación a préstamos futuros.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cohortes</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"issue_year"</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">prestamos</span><span class="o">=</span><span class="p">(</span><span class="s2">"default"</span><span class="p">,</span> <span class="s2">"size"</span><span class="p">),</span> <span class="n">tasa_default</span><span class="o">=</span><span class="p">(</span><span class="s2">"default"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">))</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">))</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">cohortes</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">cohortes</span><span class="p">[</span><span class="s2">"prestamos"</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#8DA0CB"</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Préstamos cerrados"</span><span class="p">)</span>
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cohortes</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">cohortes</span><span class="p">[</span><span class="s2">"tasa_default"</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#C44E52"</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Tasa de default (%)"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#C44E52"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Préstamos cerrados y tasa de default por año de emisión"</span><span class="p">)</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"01_cohortes"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">cohortes</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">tasa_default</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">d</span><span class="p">[</span><span class="s2">"tasa_default"</span><span class="p">])</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/6d3247c3af0b491cd09d76091c444093fdec76ed8f4e61cbf6371e393d8cef76.png" src="_images/6d3247c3af0b491cd09d76091c444093fdec76ed8f4e61cbf6371e393d8cef76.png" />
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>issue_year</th>
+      <th>2007</th>
+      <th>2008</th>
+      <th>2009</th>
+      <th>2010</th>
+      <th>2011</th>
+      <th>2012</th>
+      <th>2013</th>
+      <th>2014</th>
+      <th>2015</th>
+      <th>2016</th>
+      <th>2017</th>
+      <th>2018</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>prestamos</th>
+      <td>603.0</td>
+      <td>2393.00</td>
+      <td>5281.00</td>
+      <td>12537.00</td>
+      <td>21721.00</td>
+      <td>53367.0</td>
+      <td>134804.0</td>
+      <td>223102.00</td>
+      <td>375545.00</td>
+      <td>293095.00</td>
+      <td>169300.00</td>
+      <td>56311.00</td>
+    </tr>
+    <tr>
+      <th>tasa_default</th>
+      <td>26.2</td>
+      <td>20.73</td>
+      <td>13.69</td>
+      <td>14.01</td>
+      <td>15.18</td>
+      <td>16.2</td>
+      <td>15.6</td>
+      <td>18.45</td>
+      <td>20.18</td>
+      <td>23.28</td>
+      <td>23.12</td>
+      <td>15.75</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</section>
+<section id="lectura-con-spark-comparacion-de-tiempos">
+<h2>1.8 Lectura con Spark (comparación de tiempos)<a class="headerlink" href="#lectura-con-spark-comparacion-de-tiempos" title="Link to this heading">#</a></h2>
+<p>Se lee el mismo CSV con Spark, con la configuración de sesión exigida en la sección 9.10.4.5.
+Todas las columnas se leen como texto (sin <code class="docutils literal notranslate"><span class="pre">inferSchema</span></code>, que obligaría a recorrer el archivo dos
+veces); el conteo de filas fuerza la lectura completa.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">spark_utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">su</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">sesion_spark</span><span class="p">()</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">sdf</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">leer_csv</span><span class="p">(</span><span class="n">spark</span><span class="p">)</span>
+<span class="n">n_spark</span> <span class="o">=</span> <span class="n">sdf</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">t_spark</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tiempo de lectura + conteo con Spark: </span><span class="si">{</span><span class="n">t_spark</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s (</span><span class="si">{</span><span class="n">n_spark</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> filas)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tiempo de lectura con pandas: </span><span class="si">{</span><span class="n">t_pandas</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Particiones del DataFrame leído:"</span><span class="p">,</span> <span class="n">sdf</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">getNumPartitions</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Tiempo de lectura + conteo con Spark: 7.3 s (2,260,701 filas)
+Tiempo de lectura con pandas: 26.9 s
+Particiones del DataFrame leído: 1
+</pre></div>
+</div>
+</div>
+</div>
+<p>Spark obtiene el mismo número de filas que pandas (2.260.701). Su tiempo es menor porque el
+conteo no necesita convertir los 151 campos de cada fila en objetos de Python: el lector de CSV
+de Spark solo analiza los delimitadores. pandas, en cambio, construye un DataFrame de 6,3 GB en
+memoria. El archivo <code class="docutils literal notranslate"><span class="pre">.gz</span></code> no es divisible, así que Spark lo lee en <strong>una sola partición</strong> con un
+único núcleo: en esta etapa no aprovecha el paralelismo. La ventaja de Spark aparece cuando los
+datos ya están particionados y en caché (capítulo 7).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">u</span><span class="o">.</span><span class="n">guardar_json</span><span class="p">({</span><span class="s2">"pandas_lectura_s"</span><span class="p">:</span> <span class="n">t_pandas</span><span class="p">,</span> <span class="s2">"spark_lectura_conteo_s"</span><span class="p">:</span> <span class="n">t_spark</span><span class="p">,</span>
+                <span class="s2">"filas_csv"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_spark</span><span class="p">)},</span> <span class="n">u</span><span class="o">.</span><span class="n">RESULTADOS</span> <span class="o">/</span> <span class="s2">"tiempos_carga.json"</span><span class="p">)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="almacenamiento-intermedio">
+<h2>1.9 Almacenamiento intermedio<a class="headerlink" href="#almacenamiento-intermedio" title="Link to this heading">#</a></h2>
+<p>Se guarda el conjunto de préstamos cerrados, con todas sus columnas, en formato Parquet para los
+capítulos de EDA. El modelado con Spark no usa este archivo: vuelve a leer el CSV original.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">PRESTAMOS</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Guardado </span><span class="si">{</span><span class="n">u</span><span class="o">.</span><span class="n">PRESTAMOS</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> filas x </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columnas, "</span>
+      <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">u</span><span class="o">.</span><span class="n">PRESTAMOS</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="o">**</span><span class="mi">20</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tasa global de default: </span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">df</span><span class="p">[</span><span class="s1">'default'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> %"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Guardado prestamos_cerrados.parquet: 1,348,059 filas x 154 columnas, 196 MB
+Tasa global de default: 19.98 %
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "ml-lending"
+        },
+        kernelOptions: {
+            name: "ml-lending",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'ml-lending'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="intro.html"
+       title="página anterior">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">anterior</p>
+        <p class="prev-next-title">Default en préstamos de Lending Club: scikit-learn frente a PySpark</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="02_eda_univariado.html"
+       title="siguiente página">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">siguiente</p>
+        <p class="prev-next-title">2. Análisis unidimensional</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contenido
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lectura-del-csv-completo-con-pandas">1.1 Lectura del CSV completo con pandas</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#primeras-y-ultimas-filas">1.2 Primeras y últimas filas</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#estado-del-prestamo-y-definicion-de-la-poblacion">1.3 Estado del préstamo y definición de la población</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tipos-de-datos-y-valores-nulos-info">1.4 Tipos de datos y valores nulos: <code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#estadisticas-descriptivas-describe">1.5 Estadísticas descriptivas: <code class="docutils literal notranslate"><span class="pre">describe()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variables-derivadas">1.6 Variables derivadas</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prestamos-por-ano-de-emision">1.7 Préstamos por año de emisión</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lectura-con-spark-comparacion-de-tiempos">1.8 Lectura con Spark (comparación de tiempos)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#almacenamiento-intermedio">1.9 Almacenamiento intermedio</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+Por Camilo Molina Guerrero
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

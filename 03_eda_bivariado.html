@@ -1,0 +1,1917 @@
+
+<!DOCTYPE html>
+
+
+<html lang="es" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>3. Análisis bidimensional &#8212; Default en préstamos de Lending Club: scikit-learn frente a PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="_static/documentation_options.js?v=78d55cf8"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Haz clic para mostrar';</script>
+    <script>let toggleHintHide = 'Haz clic para ocultar';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/translations.js?v=d190bf04"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]]}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '03_eda_bivariado';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="next" title="4. Valores faltantes" href="04_valores_faltantes.html" />
+    <link rel="prev" title="2. Análisis unidimensional" href="02_eda_univariado.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="es"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Saltar al contenido principal</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Volver arriba</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Advertencia de versión"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Navegación del sitio">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="En esta página">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Default en préstamos de Lending Club: scikit-learn frente a PySpark</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Default en préstamos de Lending Club: scikit-learn frente a PySpark
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Análisis exploratorio</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_carga_vision_general.html">1. Carga inicial y visión general</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_eda_univariado.html">2. Análisis unidimensional</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">3. Análisis bidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_valores_faltantes.html">4. Valores faltantes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04b_resumen_eda.html">Resumen ejecutivo del EDA</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocesamiento y modelado</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="05_preprocesamiento.html">5. Preprocesamiento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_modelado_sklearn.html">6. Modelado con scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_modelado_pyspark.html">7. Modelado con PySpark</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Evaluación y comparación</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="08_comparacion_estadistica.html">8. Comparación estadística de los modelos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_lime.html">9. Interpretabilidad con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_comparacion_resultados.html">10. Comparación de resultados</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_experimentos.html">11. Experimentos complementarios</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Discusión</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="12_reflexion_critica.html">12. Reflexión crítica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_referencias.html">Referencias</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/camilomolinaguerrero-sudo/Clasificaci-n-de-pr-stamos-Lending-Club" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Repositorio de origen"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Descarga esta pagina">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/03_eda_bivariado.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Descargar archivo fuente"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Imprimir en PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Modo de pantalla completa"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Tema" data-bs-title="Tema"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Claro"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Oscuro"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="Sistema"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>3. Análisis bidimensional</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contenido </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variables-numericas-frente-a-default">3.1 Variables numéricas frente a <code class="docutils literal notranslate"><span class="pre">default</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#diagramas-de-caja-por-clase">3.1.1 Diagramas de caja por clase</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#graficos-de-violin-de-las-variables-mas-discriminantes">3.1.2 Gráficos de violín de las variables más discriminantes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#diferencia-de-medias-pruebas-t-y-de-mann-whitney-y-correlacion-punto-biserial">3.1.3 Diferencia de medias, pruebas t y de Mann-Whitney, y correlación punto-biserial</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variables-categoricas-frente-a-default">3.2 Variables categóricas frente a <code class="docutils literal notranslate"><span class="pre">default</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tablas-de-contingencia-y-tasa-de-default-por-categoria">3.2.1 Tablas de contingencia y tasa de default por categoría</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#barras-apiladas-de-la-proporcion-de-default">3.2.2 Barras apiladas de la proporción de default</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prueba-de-independencia-chi-cuadrado-y-v-de-cramer">3.2.3 Prueba de independencia chi-cuadrado y V de Cramér</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#relaciones-entre-variables-independientes">3.3 Relaciones entre variables independientes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#matriz-de-correlacion-de-pearson">3.3.1 Matriz de correlación de Pearson</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#asociacion-entre-variables-categoricas-v-de-cramer">3.3.2 Asociación entre variables categóricas (V de Cramér)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#redundancias-entre-la-calificacion-la-tasa-de-interes-y-el-puntaje-fico">3.3.3 Redundancias entre la calificación, la tasa de interés y el puntaje FICO</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizaciones-avanzadas">3.4 Visualizaciones avanzadas</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pairplot-de-las-variables-principales">3.4.1 Pairplot de las variables principales</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#densidades-comparativas-kde-por-clase">3.4.2 Densidades comparativas (KDE) por clase</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#matriz-de-dispersion">3.4.3 Matriz de dispersión</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="analisis-bidimensional">
+<h1>3. Análisis bidimensional<a class="headerlink" href="#analisis-bidimensional" title="Link to this heading">#</a></h1>
+<p>Sección 9.10.4.1.3 del enunciado. Se estudia la relación de cada variable con <code class="docutils literal notranslate"><span class="pre">default</span></code> y la
+relación entre las variables independientes (multicolinealidad). Las pruebas estadísticas y las
+tablas usan los 1.348.059 préstamos. Los gráficos de densidad (violín y KDE) usan una muestra
+aleatoria de 100.000 préstamos y los de dispersión (pairplot y scatter matrix) una de 5.000, para
+que sean legibles y se generen en tiempos razonables; ninguna conclusión depende solo de ellos.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"../src"</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">estadistica</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">est</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+
+<span class="n">u</span><span class="o">.</span><span class="n">estilo</span><span class="p">()</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">"display.max_columns"</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="s2">"display.width"</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="s2">"display.max_rows"</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">cargar_prestamos</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">NUM_EDA</span> <span class="o">+</span> <span class="n">u</span><span class="o">.</span><span class="n">CAT_EDA</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"default"</span><span class="p">])</span>
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">"dti"</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"dti"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">),</span> <span class="s2">"dti"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>   <span class="c1"># códigos inválidos (capítulo 2)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"default"</span><span class="p">]</span>
+<span class="n">muestra</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">100_000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">)</span>
+<span class="n">muestra_chica</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">5_000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> préstamos; tasa de default </span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> %"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1,348,059 préstamos; tasa de default 19.98 %
+</pre></div>
+</div>
+</div>
+</div>
+<section id="variables-numericas-frente-a-default">
+<h2>3.1 Variables numéricas frente a <code class="docutils literal notranslate"><span class="pre">default</span></code><a class="headerlink" href="#variables-numericas-frente-a-default" title="Link to this heading">#</a></h2>
+<section id="diagramas-de-caja-por-clase">
+<h3>3.1.1 Diagramas de caja por clase<a class="headerlink" href="#diagramas-de-caja-por-clase" title="Link to this heading">#</a></h3>
+<p>Se omiten los puntos atípicos para que las cajas sean comparables; el capítulo 2 ya los describió.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">24</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">u</span><span class="o">.</span><span class="n">NUM_EDA</span><span class="p">):</span>
+    <span class="n">datos</span> <span class="o">=</span> <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">k</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">datos</span><span class="p">,</span> <span class="n">tick_labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"Pagado"</span><span class="p">,</span> <span class="s2">"Default"</span><span class="p">],</span> <span class="n">showfliers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">patch_artist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">widths</span><span class="o">=</span><span class="mf">0.55</span><span class="p">,</span> <span class="n">medianprops</span><span class="o">=</span><span class="p">{</span><span class="s2">"color"</span><span class="p">:</span> <span class="s2">"black"</span><span class="p">})</span>
+    <span class="k">for</span> <span class="n">caja</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="s2">"boxes"</span><span class="p">],</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+        <span class="n">caja</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">PALETA</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="n">caja</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">"Distribución de cada variable numérica según la clase (sin atípicos)"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+             <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"03_boxplots_clase"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/b0d6ed1a7a8b04bbb07850ad67f5b12dc23d9bd7040da93d673727e24d9a7995.png" src="_images/b0d6ed1a7a8b04bbb07850ad67f5b12dc23d9bd7040da93d673727e24d9a7995.png" />
+</div>
+</div>
+<p>Las cajas de los préstamos en default están desplazadas hacia valores más riesgosos en las
+variables de precio y capacidad de pago: tasa de interés más alta (mediana 15,1 % frente a 12,3 %),
+plazo de 60 meses más frecuente, FICO más bajo (684 frente a 694), <code class="docutils literal notranslate"><span class="pre">dti</span></code> mayor y más cuentas
+abiertas en los últimos 24 meses. En las variables de saldo (<code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code> y <code class="docutils literal notranslate"><span class="pre">tot_cur_bal</span></code>, con
+medianas de 5.748 y 61.197 dólares entre los defaults frente a 8.018 y 87.442 entre los pagados)
+ocurre lo contrario, y en <code class="docutils literal notranslate"><span class="pre">mort_acc</span></code> (número de hipotecas) la media es menor entre los defaults
+(1,37 frente a 1,75), aunque las medianas coinciden: los prestatarios con más patrimonio
+financiero pagan más. En
+conteos como <code class="docutils literal notranslate"><span class="pre">delinq_2yrs</span></code> o <code class="docutils literal notranslate"><span class="pre">pub_rec</span></code> las cajas son casi idénticas, lo que anticipa un poder
+discriminante bajo.</p>
+</section>
+<section id="graficos-de-violin-de-las-variables-mas-discriminantes">
+<h3>3.1.2 Gráficos de violín de las variables más discriminantes<a class="headerlink" href="#graficos-de-violin-de-las-variables-mas-discriminantes" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clave</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"int_rate"</span><span class="p">,</span> <span class="s2">"term"</span><span class="p">,</span> <span class="s2">"fico_range_high"</span><span class="p">,</span> <span class="s2">"dti"</span><span class="p">,</span> <span class="s2">"annual_inc"</span><span class="p">,</span> <span class="s2">"acc_open_past_24mths"</span><span class="p">,</span>
+         <span class="s2">"loan_amnt"</span><span class="p">,</span> <span class="s2">"revol_util"</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">clave</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">muestra</span><span class="p">[[</span><span class="n">c</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"annual_inc"</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+        <span class="n">titulo</span> <span class="o">=</span> <span class="s2">"log1p(annual_inc)"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">upper</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.995</span><span class="p">))</span>
+        <span class="n">titulo</span> <span class="o">=</span> <span class="n">c</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">violinplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">"default"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">"default"</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">PALETA</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                   <span class="n">inner</span><span class="o">=</span><span class="s2">"quartile"</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">titulo</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="s2">"Pagado"</span><span class="p">,</span> <span class="s2">"Default"</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">"Densidad por clase (muestra de 100.000 préstamos)"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"03_violines"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/950efff656d2b10073b43627c729b265af07d9557a9e51f5d4d9f228ba512c27.png" src="_images/950efff656d2b10073b43627c729b265af07d9557a9e51f5d4d9f228ba512c27.png" />
+</div>
+</div>
+<p>Los violines confirman que ninguna variable separa las clases por sí sola: las densidades se
+solapan en casi todo su rango. <code class="docutils literal notranslate"><span class="pre">int_rate</span></code> muestra el desplazamiento más claro, con la masa de los
+defaults concentrada por encima de 13 %. En <code class="docutils literal notranslate"><span class="pre">term</span></code> se ve que la proporción de préstamos a 60
+meses es mucho mayor entre los defaults.</p>
+</section>
+<section id="diferencia-de-medias-pruebas-t-y-de-mann-whitney-y-correlacion-punto-biserial">
+<h3>3.1.3 Diferencia de medias, pruebas t y de Mann-Whitney, y correlación punto-biserial<a class="headerlink" href="#diferencia-de-medias-pruebas-t-y-de-mann-whitney-y-correlacion-punto-biserial" title="Link to this heading">#</a></h3>
+<p>Ninguna variable es normal (capítulo 2), por lo que la prueba principal es la de Mann-Whitney;
+la prueba t de Welch se incluye como referencia, válida aquí por el tamaño de muestra (teorema
+central del límite). Como tamaño del efecto se reporta el <strong>AUC univariado</strong>,
+<span class="math notranslate nohighlight">\(\hat{A} = U_1 / (n_0 n_1) = P(X_1 &gt; X_0) + \tfrac12 P(X_1 = X_0)\)</span>, la probabilidad de que un
+default tenga un valor mayor que un préstamo pagado, contando los empates como medio acierto:
+0,5 indica que no hay separación. Con 1,3 millones de datos casi cualquier diferencia es
+significativa, así que la magnitud del efecto es lo que ordena las variables.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filas</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">NUM_EDA</span><span class="p">:</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">p_t</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">ttest_ind</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">equal_var</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">U</span><span class="p">,</span> <span class="n">p_u</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">mannwhitneyu</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s2">"two-sided"</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"asymptotic"</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="n">c</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">r_pb</span><span class="p">,</span> <span class="n">p_pb</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">pointbiserialr</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"default"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+    <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"variable"</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span> <span class="s2">"media_pagado"</span><span class="p">:</span> <span class="n">x0</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">"media_default"</span><span class="p">:</span> <span class="n">x1</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+                  <span class="s2">"dif_medias"</span><span class="p">:</span> <span class="n">x1</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">x0</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">"mediana_pagado"</span><span class="p">:</span> <span class="n">x0</span><span class="o">.</span><span class="n">median</span><span class="p">(),</span>
+                  <span class="s2">"mediana_default"</span><span class="p">:</span> <span class="n">x1</span><span class="o">.</span><span class="n">median</span><span class="p">(),</span> <span class="s2">"t_Welch"</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span> <span class="s2">"p_t"</span><span class="p">:</span> <span class="n">p_t</span><span class="p">,</span> <span class="s2">"p_MannWhitney"</span><span class="p">:</span> <span class="n">p_u</span><span class="p">,</span>
+                  <span class="s2">"AUC_univariado"</span><span class="p">:</span> <span class="n">U</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x1</span><span class="p">)),</span> <span class="s2">"r_punto_biserial"</span><span class="p">:</span> <span class="n">r_pb</span><span class="p">,</span> <span class="s2">"p_rpb"</span><span class="p">:</span> <span class="n">p_pb</span><span class="p">})</span>
+<span class="n">biv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">filas</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"variable"</span><span class="p">)</span>
+<span class="n">biv</span><span class="p">[</span><span class="s2">"|AUC-0,5|"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">biv</span><span class="p">[</span><span class="s2">"AUC_univariado"</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Valor p máximo en las tres pruebas:"</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">biv</span><span class="p">[[</span><span class="s2">"p_t"</span><span class="p">,</span><span class="w"> </span><span class="s2">"p_MannWhitney"</span><span class="p">,</span><span class="w"> </span><span class="s2">"p_rpb"</span><span class="p">]]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+<span class="n">biv</span> <span class="o">=</span> <span class="n">biv</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"|AUC-0,5|"</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">biv</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Valor p máximo en las tres pruebas: 4.2e-19
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>media_pagado</th>
+      <th>media_default</th>
+      <th>dif_medias</th>
+      <th>mediana_pagado</th>
+      <th>mediana_default</th>
+      <th>t_Welch</th>
+      <th>p_t</th>
+      <th>p_MannWhitney</th>
+      <th>AUC_univariado</th>
+      <th>r_punto_biserial</th>
+      <th>p_rpb</th>
+      <th>|AUC-0,5|</th>
+    </tr>
+    <tr>
+      <th>variable</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>int_rate</th>
+      <td>12.6258</td>
+      <td>15.7076</td>
+      <td>3.0818</td>
+      <td>12.29</td>
+      <td>15.05</td>
+      <td>296.0736</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.6833</td>
+      <td>0.2586</td>
+      <td>0.0</td>
+      <td>0.1833</td>
+    </tr>
+    <tr>
+      <th>term</th>
+      <td>40.8826</td>
+      <td>45.3942</td>
+      <td>4.5117</td>
+      <td>36.00</td>
+      <td>36.00</td>
+      <td>184.8053</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5940</td>
+      <td>0.1757</td>
+      <td>0.0</td>
+      <td>0.0940</td>
+    </tr>
+    <tr>
+      <th>fico_range_low</th>
+      <td>698.2424</td>
+      <td>687.8291</td>
+      <td>-10.4134</td>
+      <td>690.00</td>
+      <td>680.00</td>
+      <td>-176.0158</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4066</td>
+      <td>-0.1307</td>
+      <td>0.0</td>
+      <td>0.0934</td>
+    </tr>
+    <tr>
+      <th>fico_range_high</th>
+      <td>702.2426</td>
+      <td>691.8291</td>
+      <td>-10.4135</td>
+      <td>694.00</td>
+      <td>684.00</td>
+      <td>-176.0150</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4066</td>
+      <td>-0.1307</td>
+      <td>0.0</td>
+      <td>0.0934</td>
+    </tr>
+    <tr>
+      <th>dti</th>
+      <td>17.7128</td>
+      <td>20.0327</td>
+      <td>2.3199</td>
+      <td>17.10</td>
+      <td>19.74</td>
+      <td>121.1539</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5768</td>
+      <td>0.1069</td>
+      <td>0.0</td>
+      <td>0.0768</td>
+    </tr>
+    <tr>
+      <th>acc_open_past_24mths</th>
+      <td>4.5329</td>
+      <td>5.3262</td>
+      <td>0.7933</td>
+      <td>4.00</td>
+      <td>5.00</td>
+      <td>107.8547</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5713</td>
+      <td>0.0999</td>
+      <td>0.0</td>
+      <td>0.0713</td>
+    </tr>
+    <tr>
+      <th>avg_cur_bal</th>
+      <td>14135.6451</td>
+      <td>10934.0667</td>
+      <td>-3201.5784</td>
+      <td>8018.00</td>
+      <td>5748.00</td>
+      <td>-103.2782</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4429</td>
+      <td>-0.0789</td>
+      <td>0.0</td>
+      <td>0.0571</td>
+    </tr>
+    <tr>
+      <th>mort_acc</th>
+      <td>1.7465</td>
+      <td>1.3710</td>
+      <td>-0.3754</td>
+      <td>1.00</td>
+      <td>1.00</td>
+      <td>-91.7823</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4441</td>
+      <td>-0.0753</td>
+      <td>0.0</td>
+      <td>0.0559</td>
+    </tr>
+    <tr>
+      <th>loan_amnt</th>
+      <td>14124.6372</td>
+      <td>15547.9948</td>
+      <td>1423.3575</td>
+      <td>12000.00</td>
+      <td>14300.00</td>
+      <td>75.2123</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5509</td>
+      <td>0.0653</td>
+      <td>0.0</td>
+      <td>0.0509</td>
+    </tr>
+    <tr>
+      <th>num_actv_rev_tl</th>
+      <td>5.5258</td>
+      <td>6.1081</td>
+      <td>0.5823</td>
+      <td>5.00</td>
+      <td>5.00</td>
+      <td>75.8940</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5492</td>
+      <td>0.0708</td>
+      <td>0.0</td>
+      <td>0.0492</td>
+    </tr>
+    <tr>
+      <th>percent_bc_gt_75</th>
+      <td>43.9373</td>
+      <td>49.9859</td>
+      <td>6.0486</td>
+      <td>40.00</td>
+      <td>50.00</td>
+      <td>76.6972</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5484</td>
+      <td>0.0674</td>
+      <td>0.0</td>
+      <td>0.0484</td>
+    </tr>
+    <tr>
+      <th>annual_inc</th>
+      <td>77695.7186</td>
+      <td>70398.2713</td>
+      <td>-7297.4473</td>
+      <td>65000.00</td>
+      <td>60000.00</td>
+      <td>-50.9191</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4516</td>
+      <td>-0.0417</td>
+      <td>0.0</td>
+      <td>0.0484</td>
+    </tr>
+    <tr>
+      <th>bc_util</th>
+      <td>58.9995</td>
+      <td>63.6658</td>
+      <td>4.6663</td>
+      <td>61.90</td>
+      <td>68.00</td>
+      <td>76.3556</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5481</td>
+      <td>0.0662</td>
+      <td>0.0</td>
+      <td>0.0481</td>
+    </tr>
+    <tr>
+      <th>tot_cur_bal</th>
+      <td>146779.7416</td>
+      <td>118843.2476</td>
+      <td>-27936.4939</td>
+      <td>87442.00</td>
+      <td>61197.00</td>
+      <td>-90.1572</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4534</td>
+      <td>-0.0712</td>
+      <td>0.0</td>
+      <td>0.0466</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_inq</th>
+      <td>6.8813</td>
+      <td>6.0701</td>
+      <td>-0.8112</td>
+      <td>5.00</td>
+      <td>4.00</td>
+      <td>-62.5446</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4570</td>
+      <td>-0.0562</td>
+      <td>0.0</td>
+      <td>0.0430</td>
+    </tr>
+    <tr>
+      <th>revol_util</th>
+      <td>51.0767</td>
+      <td>54.7587</td>
+      <td>3.6820</td>
+      <td>51.30</td>
+      <td>55.50</td>
+      <td>71.0965</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5429</td>
+      <td>0.0600</td>
+      <td>0.0</td>
+      <td>0.0429</td>
+    </tr>
+    <tr>
+      <th>installment</th>
+      <td>431.0574</td>
+      <td>464.6959</td>
+      <td>33.6385</td>
+      <td>367.80</td>
+      <td>402.54</td>
+      <td>59.5182</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5429</td>
+      <td>0.0514</td>
+      <td>0.0</td>
+      <td>0.0429</td>
+    </tr>
+    <tr>
+      <th>total_rev_hi_lim</th>
+      <td>33764.3419</td>
+      <td>28947.9106</td>
+      <td>-4816.4313</td>
+      <td>24700.00</td>
+      <td>22100.00</td>
+      <td>-71.8830</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4571</td>
+      <td>-0.0528</td>
+      <td>0.0</td>
+      <td>0.0429</td>
+    </tr>
+    <tr>
+      <th>inq_last_6mths</th>
+      <td>0.6306</td>
+      <td>0.7889</td>
+      <td>0.1584</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>71.6974</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5421</td>
+      <td>0.0660</td>
+      <td>0.0</td>
+      <td>0.0421</td>
+    </tr>
+    <tr>
+      <th>antig_credito_meses</th>
+      <td>196.5162</td>
+      <td>188.9601</td>
+      <td>-7.5561</td>
+      <td>178.00</td>
+      <td>171.00</td>
+      <td>-39.0440</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4719</td>
+      <td>-0.0335</td>
+      <td>0.0</td>
+      <td>0.0281</td>
+    </tr>
+    <tr>
+      <th>open_acc</th>
+      <td>11.5142</td>
+      <td>11.8959</td>
+      <td>0.3817</td>
+      <td>11.00</td>
+      <td>11.00</td>
+      <td>31.6559</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5195</td>
+      <td>0.0279</td>
+      <td>0.0</td>
+      <td>0.0195</td>
+    </tr>
+    <tr>
+      <th>pub_rec</th>
+      <td>0.2072</td>
+      <td>0.2465</td>
+      <td>0.0393</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>28.3822</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5149</td>
+      <td>0.0261</td>
+      <td>0.0</td>
+      <td>0.0149</td>
+    </tr>
+    <tr>
+      <th>total_acc</th>
+      <td>25.0444</td>
+      <td>24.7023</td>
+      <td>-0.3422</td>
+      <td>23.00</td>
+      <td>23.00</td>
+      <td>-13.1335</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4894</td>
+      <td>-0.0114</td>
+      <td>0.0</td>
+      <td>0.0106</td>
+    </tr>
+    <tr>
+      <th>pub_rec_bankruptcies</th>
+      <td>0.1296</td>
+      <td>0.1535</td>
+      <td>0.0239</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>27.9258</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5106</td>
+      <td>0.0253</td>
+      <td>0.0</td>
+      <td>0.0106</td>
+    </tr>
+    <tr>
+      <th>emp_length</th>
+      <td>5.9880</td>
+      <td>5.8554</td>
+      <td>-0.1325</td>
+      <td>6.00</td>
+      <td>6.00</td>
+      <td>-16.0126</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4895</td>
+      <td>-0.0142</td>
+      <td>0.0</td>
+      <td>0.0105</td>
+    </tr>
+    <tr>
+      <th>mths_since_last_delinq</th>
+      <td>34.4357</td>
+      <td>33.7563</td>
+      <td>-0.6794</td>
+      <td>31.00</td>
+      <td>30.00</td>
+      <td>-10.2415</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4902</td>
+      <td>-0.0126</td>
+      <td>0.0</td>
+      <td>0.0098</td>
+    </tr>
+    <tr>
+      <th>delinq_2yrs</th>
+      <td>0.3092</td>
+      <td>0.3515</td>
+      <td>0.0423</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>21.2782</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.5094</td>
+      <td>0.0193</td>
+      <td>0.0</td>
+      <td>0.0094</td>
+    </tr>
+    <tr>
+      <th>revol_bal</th>
+      <td>16491.3985</td>
+      <td>15387.5789</td>
+      <td>-1103.8196</td>
+      <td>11147.00</td>
+      <td>11065.00</td>
+      <td>-25.4572</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.4944</td>
+      <td>-0.0196</td>
+      <td>0.0</td>
+      <td>0.0056</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+<span class="n">biv</span><span class="p">[</span><span class="s2">"AUC_univariado"</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">a1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#4C72B0"</span><span class="p">)</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.72</span><span class="p">)</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"AUC univariado frente a default (0,5 = sin poder discriminante)"</span><span class="p">)</span>
+<span class="n">biv</span><span class="p">[</span><span class="s2">"r_punto_biserial"</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">a2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">biv</span><span class="p">[</span><span class="s2">"r_punto_biserial"</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"#C44E52"</span><span class="p">,</span> <span class="s2">"#4C72B0"</span><span class="p">))</span>
+<span class="n">a2</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">a2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Correlación punto-biserial con default"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"03_auc_univariado"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Variables con p de Mann-Whitney &gt;= 0,05:"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">biv</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">biv</span><span class="p">[</span><span class="s2">"p_MannWhitney"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.05</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/dc4d94ae8d37d944c2f95c0bea3e85594a2b2fd9436d6294a7466b9602d33406.png" src="_images/dc4d94ae8d37d944c2f95c0bea3e85594a2b2fd9436d6294a7466b9602d33406.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Variables con p de Mann-Whitney &gt;= 0,05: []
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Resultados.</strong> Todas las diferencias entre clases son estadísticamente significativas
+(el mayor valor p de las tres pruebas, impreso arriba, es del orden de 10⁻¹⁹), algo esperable con
+1,3 millones de datos. La magnitud es lo que
+distingue a las variables:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">int_rate</span></code> es, de lejos, la más discriminante: AUC univariado de 0,683 y correlación
+punto-biserial de 0,26. Los préstamos en default pagan en promedio 3,1 puntos más de interés.</p></li>
+<li><p>Le siguen <code class="docutils literal notranslate"><span class="pre">term</span></code> (AUC 0,594), el puntaje FICO (0,407, es decir, 0,593 en sentido inverso),
+<code class="docutils literal notranslate"><span class="pre">dti</span></code> (0,577) y <code class="docutils literal notranslate"><span class="pre">acc_open_past_24mths</span></code> (0,571).</p></li>
+<li><p>Las variables de patrimonio (<code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code>, <code class="docutils literal notranslate"><span class="pre">mort_acc</span></code>, <code class="docutils literal notranslate"><span class="pre">tot_cur_bal</span></code>, <code class="docutils literal notranslate"><span class="pre">annual_inc</span></code>) tienen un
+efecto protector moderado (AUC entre 0,44 y 0,45).</p></li>
+<li><p>Los conteos de moras y registros públicos, <code class="docutils literal notranslate"><span class="pre">emp_length</span></code>, <code class="docutils literal notranslate"><span class="pre">total_acc</span></code> y <code class="docutils literal notranslate"><span class="pre">revol_bal</span></code> tienen AUC
+univariados entre 0,48 y 0,52: diferencias significativas pero prácticamente nulas.</p></li>
+</ul>
+<p>La correlación punto-biserial ordena las variables de forma parecida al AUC. Como la de Pearson,
+es sensible a la asimetría y a los valores extremos, y por eso reordena algunas variables
+asimétricas: <code class="docutils literal notranslate"><span class="pre">annual_inc</span></code> baja del puesto 12 por AUC al 19 por correlación, y <code class="docutils literal notranslate"><span class="pre">tot_cur_bal</span></code> sube
+del 14 al 9.</p>
+</section>
+</section>
+<section id="variables-categoricas-frente-a-default">
+<h2>3.2 Variables categóricas frente a <code class="docutils literal notranslate"><span class="pre">default</span></code><a class="headerlink" href="#variables-categoricas-frente-a-default" title="Link to this heading">#</a></h2>
+<section id="tablas-de-contingencia-y-tasa-de-default-por-categoria">
+<h3>3.2.1 Tablas de contingencia y tasa de default por categoría<a class="headerlink" href="#tablas-de-contingencia-y-tasa-de-default-por-categoria" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tasa_global</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">CAT_EDA</span><span class="p">:</span>
+    <span class="n">ct</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">"default"</span><span class="p">])</span>
+    <span class="n">ct</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"pagado"</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">]</span>
+    <span class="n">ct</span><span class="p">[</span><span class="s2">"n"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ct</span><span class="p">[</span><span class="s2">"tasa_default_%"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">ct</span><span class="p">[</span><span class="s2">"default"</span><span class="p">]</span> <span class="o">/</span> <span class="n">ct</span><span class="p">[</span><span class="s2">"n"</span><span class="p">])</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">ct</span><span class="p">[</span><span class="s2">"riesgo_relativo"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ct</span><span class="p">[</span><span class="s2">"tasa_default_%"</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">tasa_global</span><span class="p">))</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">ct</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"tasa_default_%"</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">=== </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> ==="</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ct</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">15</span> <span class="k">else</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ct</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">6</span><span class="p">)])</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>=== grade ===
+       pagado  default       n  tasa_default_%  riesgo_relativo
+grade                                                          
+G        4694     4632    9326           49.67             2.49
+F       17721    14584   32305           45.14             2.26
+E       57993    36193   94186           38.43             1.92
+D      140393    61251  201644           30.38             1.52
+C      296518    85797  382315           22.44             1.12
+B      340441    52654  393095           13.39             0.67
+A      220979    14209  235188            6.04             0.30
+
+=== purpose ===
+                    pagado  default       n  tasa_default_%  riesgo_relativo
+purpose                                                                     
+small_business       10925     4652   15577           29.86             1.49
+renewable_energy       714      222     936           23.72             1.19
+moving                7297     2229    9526           23.40             1.17
+house                 5699     1598    7297           21.90             1.10
+medical              12203     3409   15612           21.84             1.09
+debt_consolidation  616115   165306  781421           21.15             1.06
+other                61793    16506   78299           21.08             1.06
+educational            335       88     423           20.80             1.04
+vacation              7340     1744    9084           19.20             0.96
+major_purchase       24052     5496   29548           18.60             0.93
+home_improvement     72145    15573   87718           17.75             0.89
+credit_card         245568    50051  295619           16.93             0.85
+car                  12495     2154   14649           14.70             0.74
+wedding               2058      292    2350           12.43             0.62
+
+=== home_ownership ===
+                pagado  default       n  tasa_default_%  riesgo_relativo
+home_ownership                                                          
+RENT            411258   124426  535684           23.23             1.16
+OTHER              144       38     182           20.88             1.05
+OWN             115106    29913  145019           20.63             1.03
+ANY                230       56     286           19.58             0.98
+MORTGAGE        551956   114879  666835           17.23             0.86
+NONE                45        8      53           15.09             0.76
+
+=== addr_state ===
+            pagado  default      n  tasa_default_%  riesgo_relativo
+addr_state                                                         
+MS            4873     1722   6595           26.11             1.31
+NE            2686      906   3592           25.22             1.26
+AR            7636     2426  10062           24.11             1.21
+AL           12711     3934  16645           23.63             1.18
+OK            9412     2886  12298           23.47             1.17
+LA           11926     3598  15524           23.18             1.16
+WV            4129      759   4888           15.53             0.78
+NH            5523      942   6465           14.57             0.73
+OR           14057     2366  16423           14.41             0.72
+VT            2284      371   2655           13.97             0.70
+ME            1749      281   2030           13.84             0.69
+DC            3024      461   3485           13.23             0.66
+
+=== verification_status ===
+                     pagado  default       n  tasa_default_%  riesgo_relativo
+verification_status                                                          
+Verified             319003    99960  418963           23.86             1.19
+Source Verified      412249   109314  521563           20.96             1.05
+Not Verified         347487    60046  407533           14.73             0.74
+
+=== application_type ===
+                   pagado  default        n  tasa_default_%  riesgo_relativo
+application_type                                                            
+Joint App           19456     6344    25800           24.59             1.23
+Individual        1059283   262976  1322259           19.89             1.00
+
+=== initial_list_status ===
+                     pagado  default       n  tasa_default_%  riesgo_relativo
+initial_list_status                                                          
+w                    625570   158440  784010           20.21             1.01
+f                    453169   110880  564049           19.66             0.98
+</pre></div>
+</div>
+</div>
+</div>
+<p>La calificación <code class="docutils literal notranslate"><span class="pre">grade</span></code> produce el gradiente más fuerte: la tasa de default pasa de 6,0 % en A a
+49,7 % en G, un riesgo relativo de 0,30 a 2,49. Entre los propósitos destaca <code class="docutils literal notranslate"><span class="pre">small_business</span></code>
+(29,9 %) y, en el otro extremo, <code class="docutils literal notranslate"><span class="pre">wedding</span></code> (12,4 %) y <code class="docutils literal notranslate"><span class="pre">car</span></code> (14,7 %). Los arrendatarios (<code class="docutils literal notranslate"><span class="pre">RENT</span></code>,
+23,2 %) incumplen más que quienes tienen hipoteca (17,2 %). Llama la atención que los ingresos
+verificados tengan <strong>más</strong> default (23,9 %) que los no verificados (14,7 %): Lending Club
+verificaba con más frecuencia a los solicitantes de mayor riesgo, así que la verificación es un
+marcador de riesgo y no una garantía. Por estado, la tasa varía entre 13,2 % (DC) y 26,1 % (MS).</p>
+</section>
+<section id="barras-apiladas-de-la-proporcion-de-default">
+<h3>3.2.2 Barras apiladas de la proporción de default<a class="headerlink" href="#barras-apiladas-de-la-proporcion-de-default" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="p">[</span><span class="s2">"grade"</span><span class="p">,</span> <span class="s2">"purpose"</span><span class="p">,</span> <span class="s2">"home_ownership"</span><span class="p">,</span> <span class="s2">"verification_status"</span><span class="p">,</span>
+                                <span class="s2">"application_type"</span><span class="p">,</span> <span class="s2">"initial_list_status"</span><span class="p">]):</span>
+    <span class="n">prop</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">"default"</span><span class="p">],</span> <span class="n">normalize</span><span class="o">=</span><span class="s2">"index"</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span> <span class="n">prop</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">PALETA</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Pagado"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span> <span class="n">prop</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">left</span><span class="o">=</span><span class="n">prop</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">PALETA</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Default"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">tasa_global</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">"lower left"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">"Proporción de default por categoría (línea: proporción global de pagados)"</span><span class="p">,</span>
+             <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"03_barras_apiladas"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">tasa_estado</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"addr_state"</span><span class="p">)[</span><span class="s2">"default"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">tasa_estado</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">tasa_estado</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#C44E52"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">tasa_global</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Tasa de default (%)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Tasa de default por estado (línea: tasa global)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"03_default_estado"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/e8eb42210dd7a66c563f3bb114cb2d53a4f1d6452be069a4aed63101f7b9ccd6.png" src="_images/e8eb42210dd7a66c563f3bb114cb2d53a4f1d6452be069a4aed63101f7b9ccd6.png" />
+<img alt="_images/2c89c8e00c107a24f4b27b7f387c4c5076b956b0cbb406dd677b67da0619dab3.png" src="_images/2c89c8e00c107a24f4b27b7f387c4c5076b956b0cbb406dd677b67da0619dab3.png" />
+</div>
+</div>
+<p>Las barras apiladas muestran visualmente lo que las tablas cuantifican. En <code class="docutils literal notranslate"><span class="pre">grade</span></code> la proporción
+de default crece de forma monótona de A a G; en <code class="docutils literal notranslate"><span class="pre">initial_list_status</span></code> y <code class="docutils literal notranslate"><span class="pre">application_type</span></code> las
+barras casi coinciden con la línea de referencia (19,7 % y 20,2 % en <code class="docutils literal notranslate"><span class="pre">initial_list_status</span></code>). En
+<code class="docutils literal notranslate"><span class="pre">application_type</span></code> la categoría <code class="docutils literal notranslate"><span class="pre">Joint</span> <span class="pre">App</span></code> sí se aparta (24,6 %, riesgo relativo 1,23), pero
+agrupa solo el 1,9 % de los préstamos, y por eso su asociación global es despreciable.</p>
+</section>
+<section id="prueba-de-independencia-chi-cuadrado-y-v-de-cramer">
+<h3>3.2.3 Prueba de independencia chi-cuadrado y V de Cramér<a class="headerlink" href="#prueba-de-independencia-chi-cuadrado-y-v-de-cramer" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">chi</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="s2">"V_Cramer"</span><span class="p">,</span> <span class="s2">"chi2"</span><span class="p">,</span> <span class="s2">"p"</span><span class="p">,</span> <span class="s2">"gl"</span><span class="p">],</span> <span class="n">est</span><span class="o">.</span><span class="n">cramer_v</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">y</span><span class="p">)),</span> <span class="n">variable</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">CAT_EDA</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"variable"</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"V_Cramer"</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">chi</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="n">chi</span><span class="p">[</span><span class="s2">"p"</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s2">"</span><span class="si">{:.2e}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">))</span><span class="o">.</span><span class="n">round</span><span class="p">({</span><span class="s2">"V_Cramer"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">"chi2"</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>V_Cramer</th>
+      <th>chi2</th>
+      <th>p</th>
+      <th>gl</th>
+    </tr>
+    <tr>
+      <th>variable</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>grade</th>
+      <td>0.2617</td>
+      <td>92310.1</td>
+      <td>0.00e+00</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>verification_status</th>
+      <td>0.0914</td>
+      <td>11271.0</td>
+      <td>0.00e+00</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>home_ownership</th>
+      <td>0.0706</td>
+      <td>6732.8</td>
+      <td>0.00e+00</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>purpose</th>
+      <td>0.0556</td>
+      <td>4182.8</td>
+      <td>0.00e+00</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>addr_state</th>
+      <td>0.0499</td>
+      <td>3402.3</td>
+      <td>0.00e+00</td>
+      <td>50</td>
+    </tr>
+    <tr>
+      <th>application_type</th>
+      <td>0.0161</td>
+      <td>349.8</td>
+      <td>4.73e-78</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>initial_list_status</th>
+      <td>0.0067</td>
+      <td>62.3</td>
+      <td>2.93e-15</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>La prueba chi-cuadrado rechaza la independencia para las siete variables (p &lt; 10⁻¹⁴), otra vez
+por el tamaño de la muestra. La V de Cramér da la magnitud: <code class="docutils literal notranslate"><span class="pre">grade</span></code> tiene una asociación moderada
+con <code class="docutils literal notranslate"><span class="pre">default</span></code> (V = 0,26); <code class="docutils literal notranslate"><span class="pre">verification_status</span></code>, <code class="docutils literal notranslate"><span class="pre">home_ownership</span></code>, <code class="docutils literal notranslate"><span class="pre">purpose</span></code> y <code class="docutils literal notranslate"><span class="pre">addr_state</span></code>
+tienen asociaciones débiles (V entre 0,05 y 0,09); <code class="docutils literal notranslate"><span class="pre">application_type</span></code> e <code class="docutils literal notranslate"><span class="pre">initial_list_status</span></code>
+tienen asociaciones despreciables (V &lt; 0,02). Se conservan estas dos últimas porque su costo es
+de solo una columna binaria cada una, y los modelos regularizados y los árboles pueden ignorarlas.</p>
+</section>
+</section>
+<section id="relaciones-entre-variables-independientes">
+<h2>3.3 Relaciones entre variables independientes<a class="headerlink" href="#relaciones-entre-variables-independientes" title="Link to this heading">#</a></h2>
+<section id="matriz-de-correlacion-de-pearson">
+<h3>3.3.1 Matriz de correlación de Pearson<a class="headerlink" href="#matriz-de-correlacion-de-pearson" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">corr</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">NUM_EDA</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"pearson"</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mf">12.5</span><span class="p">))</span>
+<span class="n">mascara</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mascara</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"RdBu_r"</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">".2f"</span><span class="p">,</span>
+            <span class="n">annot_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">"size"</span><span class="p">:</span> <span class="mf">6.5</span><span class="p">},</span> <span class="n">square</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">cbar_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">"shrink"</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">},</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Correlación de Pearson entre variables numéricas"</span><span class="p">)</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"03_correlacion"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">pares</span> <span class="o">=</span> <span class="p">(</span><span class="n">corr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">"r"</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">"level_0"</span><span class="p">:</span> <span class="s2">"var_1"</span><span class="p">,</span> <span class="s2">"level_1"</span><span class="p">:</span> <span class="s2">"var_2"</span><span class="p">}))</span>
+<span class="n">altos</span> <span class="o">=</span> <span class="n">pares</span><span class="p">[</span><span class="n">pares</span><span class="p">[</span><span class="s2">"r"</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">0.7</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"r"</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">altos</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/ea0ba78cd69819796cbd0d65cc4673c27fc436d0f4868f160770f0a8a0aa47ff.png" src="_images/ea0ba78cd69819796cbd0d65cc4673c27fc436d0f4868f160770f0a8a0aa47ff.png" />
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>var_1</th>
+      <th>var_2</th>
+      <th>r</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>125</th>
+      <td>fico_range_low</td>
+      <td>fico_range_high</td>
+      <td>1.000</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>loan_amnt</td>
+      <td>installment</td>
+      <td>0.953</td>
+    </tr>
+    <tr>
+      <th>291</th>
+      <td>revol_util</td>
+      <td>bc_util</td>
+      <td>0.855</td>
+    </tr>
+    <tr>
+      <th>347</th>
+      <td>bc_util</td>
+      <td>percent_bc_gt_75</td>
+      <td>0.845</td>
+    </tr>
+    <tr>
+      <th>358</th>
+      <td>tot_cur_bal</td>
+      <td>avg_cur_bal</td>
+      <td>0.835</td>
+    </tr>
+    <tr>
+      <th>281</th>
+      <td>revol_bal</td>
+      <td>total_rev_hi_lim</td>
+      <td>0.810</td>
+    </tr>
+    <tr>
+      <th>297</th>
+      <td>revol_util</td>
+      <td>percent_bc_gt_75</td>
+      <td>0.727</td>
+    </tr>
+    <tr>
+      <th>245</th>
+      <td>open_acc</td>
+      <td>total_acc</td>
+      <td>0.701</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Ocho pares superan <span class="math notranslate nohighlight">\(|r| = 0{,}7\)</span>. Todos tienen una explicación contable:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Par</p></th>
+<th class="head"><p>r</p></th>
+<th class="head"><p>Explicación</p></th>
+<th class="head"><p>Decisión</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fico_range_low</span></code> - <code class="docutils literal notranslate"><span class="pre">fico_range_high</span></code></p></td>
+<td><p>1,000</p></td>
+<td><p>el rango FICO mide 4 puntos en prácticamente todos los préstamos</p></td>
+<td><p>se conserva <code class="docutils literal notranslate"><span class="pre">fico_range_high</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">loan_amnt</span></code> - <code class="docutils literal notranslate"><span class="pre">installment</span></code></p></td>
+<td><p>0,953</p></td>
+<td><p>la cuota es función del monto, la tasa y el plazo</p></td>
+<td><p>se conserva <code class="docutils literal notranslate"><span class="pre">loan_amnt</span></code> (AUC más alto)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">revol_util</span></code> - <code class="docutils literal notranslate"><span class="pre">bc_util</span></code></p></td>
+<td><p>0,855</p></td>
+<td><p>utilización rotativa total y de tarjetas bancarias</p></td>
+<td><p>se conserva <code class="docutils literal notranslate"><span class="pre">revol_util</span></code> (0,07 % de faltantes frente a 4,8 %, capítulo 2)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bc_util</span></code> - <code class="docutils literal notranslate"><span class="pre">percent_bc_gt_75</span></code></p></td>
+<td><p>0,845</p></td>
+<td><p>ambas miden uso de tarjetas</p></td>
+<td><p>se eliminan ambas</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tot_cur_bal</span></code> - <code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code></p></td>
+<td><p>0,835</p></td>
+<td><p>el promedio es el total entre el número de cuentas</p></td>
+<td><p>se conserva <code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code> (AUC más alto)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">revol_bal</span></code> - <code class="docutils literal notranslate"><span class="pre">total_rev_hi_lim</span></code></p></td>
+<td><p>0,810</p></td>
+<td><p>saldo y límite rotativo; su cociente es <code class="docutils literal notranslate"><span class="pre">revol_util</span></code></p></td>
+<td><p>se conserva <code class="docutils literal notranslate"><span class="pre">total_rev_hi_lim</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">revol_util</span></code> - <code class="docutils literal notranslate"><span class="pre">percent_bc_gt_75</span></code></p></td>
+<td><p>0,727</p></td>
+<td><p>ambas miden utilización</p></td>
+<td><p>se elimina <code class="docutils literal notranslate"><span class="pre">percent_bc_gt_75</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">open_acc</span></code> - <code class="docutils literal notranslate"><span class="pre">total_acc</span></code></p></td>
+<td><p>0,701</p></td>
+<td><p>cuentas abiertas y cuentas totales</p></td>
+<td><p>se conserva <code class="docutils literal notranslate"><span class="pre">open_acc</span></code> (AUC más alto)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Cuando se elimina una variable de un par, su pareja conserva entre el 49 % (<span class="math notranslate nohighlight">\(r^2\)</span> de <code class="docutils literal notranslate"><span class="pre">open_acc</span></code> y
+<code class="docutils literal notranslate"><span class="pre">total_acc</span></code>) y el 100 % (FICO) de su variación lineal; la pérdida es mínima en los pares con
+<span class="math notranslate nohighlight">\(r \geq 0{,}95\)</span> y moderada en los demás.</p>
+<p>La exclusión no busca mejorar el AUC de los árboles, que toleran la colinealidad, sino
+estabilizar los coeficientes de la regresión logística y del SVM lineal y respetar el supuesto
+de independencia condicional de Naive Bayes.</p>
+</section>
+<section id="asociacion-entre-variables-categoricas-v-de-cramer">
+<h3>3.3.2 Asociación entre variables categóricas (V de Cramér)<a class="headerlink" href="#asociacion-entre-variables-categoricas-v-de-cramer" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cats</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">CAT_EDA</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cats</span><span class="p">)),</span> <span class="n">index</span><span class="o">=</span><span class="n">cats</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">cats</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cats</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">cats</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">V</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">cramer_v</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">a</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">b</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">7.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">".2f"</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"Reds"</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">square</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"V de Cramér entre variables categóricas"</span><span class="p">)</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"03_cramer"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">V</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/94f3f904ce7c7e9a5b291358b4d0df5819e660f4df05f64b76a1c829d5abcb26.png" src="_images/94f3f904ce7c7e9a5b291358b4d0df5819e660f4df05f64b76a1c829d5abcb26.png" />
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>grade</th>
+      <th>purpose</th>
+      <th>home_ownership</th>
+      <th>addr_state</th>
+      <th>verification_status</th>
+      <th>application_type</th>
+      <th>initial_list_status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>grade</th>
+      <td>1.000</td>
+      <td>0.083</td>
+      <td>0.038</td>
+      <td>0.017</td>
+      <td>0.175</td>
+      <td>0.025</td>
+      <td>0.119</td>
+    </tr>
+    <tr>
+      <th>purpose</th>
+      <td>0.083</td>
+      <td>1.000</td>
+      <td>0.086</td>
+      <td>0.021</td>
+      <td>0.062</td>
+      <td>0.021</td>
+      <td>0.068</td>
+    </tr>
+    <tr>
+      <th>home_ownership</th>
+      <td>0.038</td>
+      <td>0.086</td>
+      <td>1.000</td>
+      <td>0.111</td>
+      <td>0.029</td>
+      <td>0.052</td>
+      <td>0.043</td>
+    </tr>
+    <tr>
+      <th>addr_state</th>
+      <td>0.017</td>
+      <td>0.021</td>
+      <td>0.111</td>
+      <td>1.000</td>
+      <td>0.021</td>
+      <td>0.044</td>
+      <td>0.040</td>
+    </tr>
+    <tr>
+      <th>verification_status</th>
+      <td>0.175</td>
+      <td>0.062</td>
+      <td>0.029</td>
+      <td>0.021</td>
+      <td>1.000</td>
+      <td>0.030</td>
+      <td>0.076</td>
+    </tr>
+    <tr>
+      <th>application_type</th>
+      <td>0.025</td>
+      <td>0.021</td>
+      <td>0.052</td>
+      <td>0.044</td>
+      <td>0.030</td>
+      <td>1.000</td>
+      <td>0.062</td>
+    </tr>
+    <tr>
+      <th>initial_list_status</th>
+      <td>0.119</td>
+      <td>0.068</td>
+      <td>0.043</td>
+      <td>0.040</td>
+      <td>0.076</td>
+      <td>0.062</td>
+      <td>1.000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Las asociaciones entre variables categóricas son débiles: la mayor es entre <code class="docutils literal notranslate"><span class="pre">grade</span></code> y
+<code class="docutils literal notranslate"><span class="pre">verification_status</span></code> (V = 0,18), coherente con que se verificaban más los préstamos riesgosos, y
+ninguna justifica eliminar una variable.</p>
+</section>
+<section id="redundancias-entre-la-calificacion-la-tasa-de-interes-y-el-puntaje-fico">
+<h3>3.3.3 Redundancias entre la calificación, la tasa de interés y el puntaje FICO<a class="headerlink" href="#redundancias-entre-la-calificacion-la-tasa-de-interes-y-el-puntaje-fico" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">grade</span></code> es categórica y <code class="docutils literal notranslate"><span class="pre">int_rate</span></code> numérica; su asociación se mide con la razón de correlación
+<span class="math notranslate nohighlight">\(\eta^2\)</span> (proporción de la varianza de <code class="docutils literal notranslate"><span class="pre">int_rate</span></code> explicada por <code class="docutils literal notranslate"><span class="pre">grade</span></code>).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">eta2</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"c"</span><span class="p">:</span> <span class="n">cat</span><span class="p">,</span> <span class="s2">"x"</span><span class="p">:</span> <span class="n">num</span><span class="p">})</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">media</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">"x"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">entre</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"c"</span><span class="p">)[</span><span class="s2">"x"</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">"size"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">])</span><span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="k">lambda</span> <span class="n">g</span><span class="p">:</span> <span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s2">"size"</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s2">"mean"</span><span class="p">]</span> <span class="o">-</span> <span class="n">media</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">entre</span> <span class="o">/</span> <span class="p">((</span><span class="n">d</span><span class="p">[</span><span class="s2">"x"</span><span class="p">]</span> <span class="o">-</span> <span class="n">media</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"eta² de int_rate explicada por grade:        </span><span class="si">{</span><span class="n">eta2</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">'grade'</span><span class="p">],</span><span class="w"> </span><span class="n">df</span><span class="p">[</span><span class="s1">'int_rate'</span><span class="p">])</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"eta² de fico_range_high explicada por grade: </span><span class="si">{</span><span class="n">eta2</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">'grade'</span><span class="p">],</span><span class="w"> </span><span class="n">df</span><span class="p">[</span><span class="s1">'fico_range_high'</span><span class="p">])</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"r de Pearson int_rate - fico_range_high:     </span><span class="si">{</span><span class="n">corr</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'int_rate'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fico_range_high'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"r de Pearson fico_range_low - fico_range_high: </span><span class="si">{</span><span class="n">corr</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'fico_range_low'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fico_range_high'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">"grade"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">"int_rate"</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="s2">"ABCDEFG"</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#8DA0CB"</span><span class="p">,</span>
+            <span class="n">showfliers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Tasa de interés por calificación de riesgo"</span><span class="p">)</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"03_grade_int_rate"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>eta² de int_rate explicada por grade:        0.907
+eta² de fico_range_high explicada por grade: 0.235
+r de Pearson int_rate - fico_range_high:     -0.406
+r de Pearson fico_range_low - fico_range_high: 1.0000
+</pre></div>
+</div>
+<img alt="_images/79ee09509b8cfe96414b01eb92e219189669578ee6d67201c3090d71d61c86eb.png" src="_images/79ee09509b8cfe96414b01eb92e219189669578ee6d67201c3090d71d61c86eb.png" />
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">grade</span></code> explica el 90,7 % de la varianza de <code class="docutils literal notranslate"><span class="pre">int_rate</span></code>: Lending Club fija la tasa a partir de la
+subcalificación, así que ambas miden lo mismo y <code class="docutils literal notranslate"><span class="pre">int_rate</span></code> contiene la información de <code class="docutils literal notranslate"><span class="pre">grade</span></code>
+con más resolución. Se excluyen <code class="docutils literal notranslate"><span class="pre">grade</span></code> y <code class="docutils literal notranslate"><span class="pre">sub_grade</span></code> del modelado. La relación entre FICO e
+<code class="docutils literal notranslate"><span class="pre">int_rate</span></code> que sugiere el enunciado existe (r = −0,41; <code class="docutils literal notranslate"><span class="pre">grade</span></code> explica el 23,5 % de la varianza
+de FICO), pero está lejos de la redundancia: el FICO es una de las entradas del precio, no el
+precio mismo, y ambas variables se conservan.</p>
+</section>
+</section>
+<section id="visualizaciones-avanzadas">
+<h2>3.4 Visualizaciones avanzadas<a class="headerlink" href="#visualizaciones-avanzadas" title="Link to this heading">#</a></h2>
+<section id="pairplot-de-las-variables-principales">
+<h3>3.4.1 Pairplot de las variables principales<a class="headerlink" href="#pairplot-de-las-variables-principales" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vars_pp</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"int_rate"</span><span class="p">,</span> <span class="s2">"fico_range_high"</span><span class="p">,</span> <span class="s2">"dti"</span><span class="p">,</span> <span class="s2">"loan_amnt"</span><span class="p">,</span> <span class="s2">"annual_inc"</span><span class="p">]</span>
+<span class="n">pp</span> <span class="o">=</span> <span class="n">muestra_chica</span><span class="p">[</span><span class="n">vars_pp</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"default"</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">pp</span><span class="p">[</span><span class="s2">"annual_inc"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">pp</span><span class="p">[</span><span class="s2">"annual_inc"</span><span class="p">])</span>
+<span class="n">pp</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">"annual_inc"</span><span class="p">:</span> <span class="s2">"log1p_annual_inc"</span><span class="p">})</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">pairplot</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">"default"</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">PALETA</span><span class="p">,</span> <span class="n">corner</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">diag_kind</span><span class="o">=</span><span class="s2">"kde"</span><span class="p">,</span>
+                 <span class="n">plot_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">"s"</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">"alpha"</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span> <span class="s2">"linewidth"</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="n">height</span><span class="o">=</span><span class="mf">2.3</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">"Pairplot (muestra de 5.000 préstamos)"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">1.01</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">FIGURAS</span> <span class="o">/</span> <span class="s2">"03_pairplot.png"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/4a38133dbfa30f81d327401550ece5e091cb17590567bc36e1707e723f660957.png" src="_images/4a38133dbfa30f81d327401550ece5e091cb17590567bc36e1707e723f660957.png" />
+</div>
+</div>
+<p>El pairplot no muestra fronteras nítidas entre clases en ningún par de variables: los defaults
+(rojo) se concentran en la zona de tasa alta y FICO bajo, pero mezclados con préstamos pagados.
+La relación negativa entre <code class="docutils literal notranslate"><span class="pre">int_rate</span></code> y <code class="docutils literal notranslate"><span class="pre">fico_range_high</span></code> y la positiva entre <code class="docutils literal notranslate"><span class="pre">loan_amnt</span></code> e
+ingreso son las únicas visibles. Se espera, por tanto, un AUC moderado (del orden de 0,70) y no
+una separación casi perfecta.</p>
+</section>
+<section id="densidades-comparativas-kde-por-clase">
+<h3>3.4.2 Densidades comparativas (KDE) por clase<a class="headerlink" href="#densidades-comparativas-kde-por-clase" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">clave</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">muestra</span><span class="p">[[</span><span class="n">c</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"annual_inc"</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">upper</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.995</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"default"</span><span class="p">]</span> <span class="o">==</span> <span class="n">k</span><span class="p">,</span> <span class="n">c</span><span class="p">],</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">PALETA</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">ETIQUETAS</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">common_norm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bw_adjust</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"log1p(annual_inc)"</span> <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"annual_inc"</span> <span class="k">else</span> <span class="n">c</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">"Densidades por clase (muestra de 100.000 préstamos)"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"03_kde"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/81675f163562be0bddc8368403cf31d5b4e0d3805a14935ead7da123e9f27314.png" src="_images/81675f163562be0bddc8368403cf31d5b4e0d3805a14935ead7da123e9f27314.png" />
+</div>
+</div>
+<p>Las densidades por clase se solapan en gran parte de su rango. El desplazamiento es claro en
+<code class="docutils literal notranslate"><span class="pre">int_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">term</span></code> (más plazos de 60 meses entre los defaults) y <code class="docutils literal notranslate"><span class="pre">fico_range_high</span></code>, moderado en
+<code class="docutils literal notranslate"><span class="pre">dti</span></code> y <code class="docutils literal notranslate"><span class="pre">acc_open_past_24mths</span></code> y pequeño en <code class="docutils literal notranslate"><span class="pre">annual_inc</span></code>, <code class="docutils literal notranslate"><span class="pre">loan_amnt</span></code> y <code class="docutils literal notranslate"><span class="pre">revol_util</span></code>.</p>
+</section>
+<section id="matriz-de-dispersion">
+<h3>3.4.3 Matriz de dispersión<a class="headerlink" href="#matriz-de-dispersion" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sm</span> <span class="o">=</span> <span class="n">muestra_chica</span><span class="p">[[</span><span class="s2">"int_rate"</span><span class="p">,</span> <span class="s2">"fico_range_high"</span><span class="p">,</span> <span class="s2">"dti"</span><span class="p">,</span> <span class="s2">"revol_util"</span><span class="p">,</span> <span class="s2">"acc_open_past_24mths"</span><span class="p">,</span>
+                    <span class="s2">"default"</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+<span class="n">ejes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">scatter_matrix</span><span class="p">(</span><span class="n">sm</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">"default"</span><span class="p">),</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                                  <span class="n">diagonal</span><span class="o">=</span><span class="s2">"hist"</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">sm</span><span class="p">[</span><span class="s2">"default"</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">PALETA</span><span class="p">),</span> <span class="n">hist_kwds</span><span class="o">=</span><span class="p">{</span><span class="s2">"bins"</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">"Matriz de dispersión (muestra de 5.000; rojo = default)"</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.92</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">FIGURAS</span> <span class="o">/</span> <span class="s2">"03_scatter_matrix.png"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c8e0c053556ea84f4ecafc8243b4403de733bca064463318021000d8d0a145ff.png" src="_images/c8e0c053556ea84f4ecafc8243b4403de733bca064463318021000d8d0a145ff.png" />
+</div>
+</div>
+<p>La matriz de dispersión no revela relaciones no lineales fuertes entre las variables clave. Las
+nubes son difusas, salvo la frontera inferior de <code class="docutils literal notranslate"><span class="pre">fico_range_high</span></code> y la estructura en bandas de
+<code class="docutils literal notranslate"><span class="pre">int_rate</span></code>, que refleja la grilla discreta de tasas de Lending Club.</p>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "ml-lending"
+        },
+        kernelOptions: {
+            name: "ml-lending",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'ml-lending'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="02_eda_univariado.html"
+       title="página anterior">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">anterior</p>
+        <p class="prev-next-title">2. Análisis unidimensional</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="04_valores_faltantes.html"
+       title="siguiente página">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">siguiente</p>
+        <p class="prev-next-title">4. Valores faltantes</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contenido
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variables-numericas-frente-a-default">3.1 Variables numéricas frente a <code class="docutils literal notranslate"><span class="pre">default</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#diagramas-de-caja-por-clase">3.1.1 Diagramas de caja por clase</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#graficos-de-violin-de-las-variables-mas-discriminantes">3.1.2 Gráficos de violín de las variables más discriminantes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#diferencia-de-medias-pruebas-t-y-de-mann-whitney-y-correlacion-punto-biserial">3.1.3 Diferencia de medias, pruebas t y de Mann-Whitney, y correlación punto-biserial</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variables-categoricas-frente-a-default">3.2 Variables categóricas frente a <code class="docutils literal notranslate"><span class="pre">default</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tablas-de-contingencia-y-tasa-de-default-por-categoria">3.2.1 Tablas de contingencia y tasa de default por categoría</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#barras-apiladas-de-la-proporcion-de-default">3.2.2 Barras apiladas de la proporción de default</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prueba-de-independencia-chi-cuadrado-y-v-de-cramer">3.2.3 Prueba de independencia chi-cuadrado y V de Cramér</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#relaciones-entre-variables-independientes">3.3 Relaciones entre variables independientes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#matriz-de-correlacion-de-pearson">3.3.1 Matriz de correlación de Pearson</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#asociacion-entre-variables-categoricas-v-de-cramer">3.3.2 Asociación entre variables categóricas (V de Cramér)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#redundancias-entre-la-calificacion-la-tasa-de-interes-y-el-puntaje-fico">3.3.3 Redundancias entre la calificación, la tasa de interés y el puntaje FICO</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizaciones-avanzadas">3.4 Visualizaciones avanzadas</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pairplot-de-las-variables-principales">3.4.1 Pairplot de las variables principales</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#densidades-comparativas-kde-por-clase">3.4.2 Densidades comparativas (KDE) por clase</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#matriz-de-dispersion">3.4.3 Matriz de dispersión</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+Por Camilo Molina Guerrero
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

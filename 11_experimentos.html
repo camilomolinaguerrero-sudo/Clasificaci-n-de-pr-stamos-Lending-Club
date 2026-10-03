@@ -1,0 +1,1876 @@
+
+<!DOCTYPE html>
+
+
+<html lang="es" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>11. Experimentos complementarios &#8212; Default en préstamos de Lending Club: scikit-learn frente a PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="_static/documentation_options.js?v=78d55cf8"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Haz clic para mostrar';</script>
+    <script>let toggleHintHide = 'Haz clic para ocultar';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/translations.js?v=d190bf04"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]]}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '11_experimentos';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="next" title="12. Reflexión crítica" href="12_reflexion_critica.html" />
+    <link rel="prev" title="10. Comparación de resultados" href="10_comparacion_resultados.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="es"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Saltar al contenido principal</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Volver arriba</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Advertencia de versión"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Navegación del sitio">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="En esta página">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Default en préstamos de Lending Club: scikit-learn frente a PySpark</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Default en préstamos de Lending Club: scikit-learn frente a PySpark
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Análisis exploratorio</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_carga_vision_general.html">1. Carga inicial y visión general</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_eda_univariado.html">2. Análisis unidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_eda_bivariado.html">3. Análisis bidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_valores_faltantes.html">4. Valores faltantes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04b_resumen_eda.html">Resumen ejecutivo del EDA</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocesamiento y modelado</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="05_preprocesamiento.html">5. Preprocesamiento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_modelado_sklearn.html">6. Modelado con scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_modelado_pyspark.html">7. Modelado con PySpark</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Evaluación y comparación</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="08_comparacion_estadistica.html">8. Comparación estadística de los modelos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_lime.html">9. Interpretabilidad con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_comparacion_resultados.html">10. Comparación de resultados</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">11. Experimentos complementarios</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Discusión</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="12_reflexion_critica.html">12. Reflexión crítica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_referencias.html">Referencias</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/camilomolinaguerrero-sudo/Clasificaci-n-de-pr-stamos-Lending-Club" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Repositorio de origen"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Descarga esta pagina">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/11_experimentos.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Descargar archivo fuente"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Imprimir en PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Modo de pantalla completa"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Tema" data-bs-title="Tema"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Claro"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Oscuro"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="Sistema"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>11. Experimentos complementarios</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contenido </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-partir-de-que-volumen-supera-pyspark-a-scikit-learn">11.1 ¿A partir de qué volumen supera PySpark a scikit-learn?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#efecto-de-las-condiciones-obligatorias-de-spark">11.2 Efecto de las condiciones obligatorias de Spark</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache">Caché</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#discretizacion-de-los-arboles-maxbins">11.3 Discretización de los árboles (<code class="docutils literal notranslate"><span class="pre">maxBins</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#poda-de-hojas-con-la-misma-clase">Poda de hojas con la misma clase</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#la-perdida-hinge-de-linearsvc">11.4 La pérdida <em>hinge</em> de <code class="docutils literal notranslate"><span class="pre">LinearSVC</span></code></a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="experimentos-complementarios">
+<h1>11. Experimentos complementarios<a class="headerlink" href="#experimentos-complementarios" title="Link to this heading">#</a></h1>
+<p>Las preguntas de la reflexión crítica (capítulo 12) piden explicar <em>por qué</em> un entorno fue más
+rápido, <em>a partir de qué volumen</em> PySpark supera a scikit-learn, <em>qué efecto</em> tuvo cada condición
+obligatoria y <em>qué diferencias de implementación</em> explican las discrepancias. Los capítulos 6 y 7
+miden una sola configuración; este capítulo varía un factor a la vez:</p>
+<ol class="arabic simple">
+<li><p><strong>Volumen de datos</strong>: tiempo de ajuste de tres modelos con fracciones del entrenamiento (1 % a
+100 %) y con el entrenamiento replicado 2 y 4 veces (2,2 y 4,3 millones de filas).</p></li>
+<li><p><strong>Condiciones obligatorias de Spark</strong>: número de particiones, caché, memoria del driver,
+fracciones de memoria y paralelismo del <code class="docutils literal notranslate"><span class="pre">CrossValidator</span></code>.</p></li>
+<li><p><strong>Discretización de los árboles</strong> (<code class="docutils literal notranslate"><span class="pre">maxBins</span></code>).</p></li>
+<li><p><strong>Pérdida <em>hinge</em> de <code class="docutils literal notranslate"><span class="pre">LinearSVC</span></code></strong>.</p></li>
+</ol>
+<p>Estos experimentos son auxiliares: las submuestras y réplicas sirven solo para medir cómo escala
+el tiempo; ningún modelo de los capítulos 6 a 10 se entrenó con datos reducidos. Cada
+configuración de Spark se ejecuta en un proceso nuevo (<code class="docutils literal notranslate"><span class="pre">src/exp_spark.py</span></code>), porque la memoria y
+las demás opciones de la sesión solo se aplican al arrancar la JVM. Los resultados se guardan en
+<code class="docutils literal notranslate"><span class="pre">data/resultados/experimentos.json</span></code> y no se recalculan si ya existen.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"../src"</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">roc_auc_score</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.svm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearSVC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">features</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fe</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+
+<span class="n">u</span><span class="o">.</span><span class="n">estilo</span><span class="p">()</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">"display.max_columns"</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="s2">"display.width"</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">RUTA</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">RESULTADOS</span> <span class="o">/</span> <span class="s2">"experimentos.json"</span>
+<span class="n">EXP</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">RUTA</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span> <span class="k">if</span> <span class="n">RUTA</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">guardar</span><span class="p">():</span>
+    <span class="n">RUTA</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">EXP</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">spark_exp</span><span class="p">(</span><span class="n">cfg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Ejecuta una configuración en un proceso nuevo (o devuelve el resultado guardado)."""</span>
+    <span class="n">clave</span> <span class="o">=</span> <span class="s2">"spark|"</span> <span class="o">+</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">clave</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">EXP</span><span class="p">:</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">u</span><span class="o">.</span><span class="n">PYTHON_VENV</span><span class="p">,</span> <span class="s2">"../src/exp_spark.py"</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">cfg</span><span class="p">)],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="s2">"PYTHONPATH"</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">"../src"</span><span class="p">)})</span>
+        <span class="n">linea</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"RESULTADO "</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">linea</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">stderr</span><span class="p">[</span><span class="o">-</span><span class="mi">3000</span><span class="p">:])</span>
+        <span class="n">EXP</span><span class="p">[</span><span class="n">clave</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">linea</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">10</span><span class="p">:]),</span> <span class="s2">"t_proceso_s"</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">}</span>
+        <span class="n">guardar</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">EXP</span><span class="p">[</span><span class="n">clave</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sk_exp</span><span class="p">(</span><span class="n">nombre</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+    <span class="n">clave</span> <span class="o">=</span> <span class="s2">"sklearn|"</span> <span class="o">+</span> <span class="n">nombre</span>
+    <span class="k">if</span> <span class="n">clave</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">EXP</span><span class="p">:</span>
+        <span class="n">EXP</span><span class="p">[</span><span class="n">clave</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn</span><span class="p">()</span>
+        <span class="n">guardar</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">EXP</span><span class="p">[</span><span class="n">clave</span><span class="p">]</span>
+
+
+<span class="n">spark_exp</span><span class="p">({</span><span class="s2">"tarea"</span><span class="p">:</span> <span class="s2">"preparar"</span><span class="p">})</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">fe</span><span class="o">.</span><span class="n">preparar_sklearn</span><span class="p">()</span>
+<span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"y_train"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Entrenamiento completo: </span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> filas"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Entrenamiento completo: 1,078,447 filas
+</pre></div>
+</div>
+</div>
+</div>
+<section id="a-partir-de-que-volumen-supera-pyspark-a-scikit-learn">
+<h2>11.1 ¿A partir de qué volumen supera PySpark a scikit-learn?<a class="headerlink" href="#a-partir-de-que-volumen-supera-pyspark-a-scikit-learn" title="Link to this heading">#</a></h2>
+<p>Tres modelos con una configuración fija (sin validación cruzada, para aislar el costo de un
+ajuste): regresión logística (<span class="math notranslate nohighlight">\(\lambda = 10^{-5}\)</span>), árbol de profundidad 10 y bosque de 50
+árboles de profundidad 10. scikit-learn usa todos los núcleos en el bosque (<code class="docutils literal notranslate"><span class="pre">n_jobs=-1</span></code>); la
+regresión logística (<code class="docutils literal notranslate"><span class="pre">lbfgs</span></code>) y el árbol son de un solo hilo en su ciclo principal. PySpark se
+mide con los datos repartidos en 40 particiones (como en el capítulo 7) y en 400 (el valor de
+<code class="docutils literal notranslate"><span class="pre">spark.sql.shuffle.partitions</span></code> del enunciado), para separar el efecto del volumen del efecto del
+particionado. Los tamaños por encima de
+1.078.447 se obtienen replicando el entrenamiento completo.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">FRACCIONES</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+<span class="n">REPLICAS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">datos_tamano</span><span class="p">(</span><span class="n">frac</span><span class="p">,</span> <span class="n">rep</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">rep</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="s2">"X_train"</span><span class="p">]]</span> <span class="o">*</span> <span class="n">rep</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="s2">"y_train"</span><span class="p">]]</span> <span class="o">*</span> <span class="n">rep</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">frac</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">frac</span> <span class="o">*</span> <span class="n">n</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span><span class="p">[</span><span class="s2">"X_train"</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"y_train"</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">d</span><span class="p">[</span><span class="s2">"X_train"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"y_train"</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sk_modelo</span><span class="p">(</span><span class="n">nombre</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">nombre</span> <span class="o">==</span> <span class="s2">"lr"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1e-5</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span> <span class="n">solver</span><span class="o">=</span><span class="s2">"lbfgs"</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nombre</span> <span class="o">==</span> <span class="s2">"dt"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="s2">"sqrt"</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">)</span>
+
+
+<span class="n">filas</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">frac</span><span class="p">,</span> <span class="n">rep</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">FRACCIONES</span><span class="p">]</span> <span class="o">+</span> <span class="p">[(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">REPLICAS</span><span class="p">]:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">y</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"lr"</span><span class="p">,</span> <span class="s2">"dt"</span><span class="p">,</span> <span class="s2">"rf"</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">medir</span><span class="p">():</span>
+            <span class="k">global</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span>
+            <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">datos_tamano</span><span class="p">(</span><span class="n">frac</span><span class="p">,</span> <span class="n">rep</span><span class="p">)</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">est</span> <span class="o">=</span> <span class="n">sk_modelo</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"X_test"</span><span class="p">])[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">"n_train"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="s2">"t_ajuste_s"</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span> <span class="s2">"auc_test"</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"y_test"</span><span class="p">],</span> <span class="n">s</span><span class="p">)}</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">sk_exp</span><span class="p">(</span><span class="sa">f</span><span class="s2">"escala|</span><span class="si">{</span><span class="n">mod</span><span class="si">}</span><span class="s2">|</span><span class="si">{</span><span class="n">frac</span><span class="si">}</span><span class="s2">|</span><span class="si">{</span><span class="n">rep</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">medir</span><span class="p">)</span>
+        <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"entorno"</span><span class="p">:</span> <span class="s2">"scikit-learn"</span><span class="p">,</span> <span class="s2">"modelo"</span><span class="p">:</span> <span class="n">mod</span><span class="p">,</span> <span class="s2">"fraccion"</span><span class="p">:</span> <span class="n">frac</span><span class="p">,</span> <span class="s2">"replicas"</span><span class="p">:</span> <span class="n">rep</span><span class="p">,</span> <span class="o">**</span><span class="n">r</span><span class="p">})</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">400</span><span class="p">):</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">spark_exp</span><span class="p">({</span><span class="s2">"tarea"</span><span class="p">:</span> <span class="s2">"escala"</span><span class="p">,</span> <span class="s2">"modelo"</span><span class="p">:</span> <span class="n">mod</span><span class="p">,</span> <span class="s2">"fraccion"</span><span class="p">:</span> <span class="n">frac</span><span class="p">,</span> <span class="s2">"replicas"</span><span class="p">:</span> <span class="n">rep</span><span class="p">,</span>
+                           <span class="s2">"particiones"</span><span class="p">:</span> <span class="n">part</span><span class="p">})</span>
+            <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"entorno"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"PySpark (</span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2"> part.)"</span><span class="p">,</span> <span class="s2">"modelo"</span><span class="p">:</span> <span class="n">mod</span><span class="p">,</span> <span class="s2">"fraccion"</span><span class="p">:</span> <span class="n">frac</span><span class="p">,</span>
+                          <span class="s2">"replicas"</span><span class="p">:</span> <span class="n">rep</span><span class="p">,</span> <span class="s2">"n_train"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"n_train"</span><span class="p">],</span> <span class="s2">"t_ajuste_s"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"t_ajuste_s"</span><span class="p">],</span>
+                          <span class="s2">"auc_test"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"auc_test"</span><span class="p">]})</span>
+    <span class="k">del</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span>
+<span class="n">escala</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">filas</span><span class="p">)</span>
+<span class="n">escala</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">RESULTADOS</span> <span class="o">/</span> <span class="s2">"exp_escala.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">escala</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">"modelo"</span><span class="p">,</span> <span class="s2">"n_train"</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="s2">"entorno"</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s2">"t_ajuste_s"</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>entorno</th>
+      <th>PySpark (40 part.)</th>
+      <th>PySpark (400 part.)</th>
+      <th>scikit-learn</th>
+    </tr>
+    <tr>
+      <th>modelo</th>
+      <th>n_train</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="13" valign="top">dt</th>
+      <th>10784</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.06</td>
+    </tr>
+    <tr>
+      <th>10921</th>
+      <td>2.28</td>
+      <td>9.29</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>53922</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.29</td>
+    </tr>
+    <tr>
+      <th>54175</th>
+      <td>2.98</td>
+      <td>12.70</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>107843</th>
+      <td>3.76</td>
+      <td>16.62</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>107844</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.61</td>
+    </tr>
+    <tr>
+      <th>269321</th>
+      <td>4.44</td>
+      <td>20.72</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>269611</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.53</td>
+    </tr>
+    <tr>
+      <th>538833</th>
+      <td>5.98</td>
+      <td>21.85</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>539223</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3.23</td>
+    </tr>
+    <tr>
+      <th>1078447</th>
+      <td>8.08</td>
+      <td>23.47</td>
+      <td>6.79</td>
+    </tr>
+    <tr>
+      <th>2156894</th>
+      <td>11.65</td>
+      <td>26.20</td>
+      <td>14.04</td>
+    </tr>
+    <tr>
+      <th>4313788</th>
+      <td>18.70</td>
+      <td>33.81</td>
+      <td>28.58</td>
+    </tr>
+    <tr>
+      <th rowspan="13" valign="top">lr</th>
+      <th>10784</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.02</td>
+    </tr>
+    <tr>
+      <th>10921</th>
+      <td>3.93</td>
+      <td>16.53</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>53922</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.05</td>
+    </tr>
+    <tr>
+      <th>54175</th>
+      <td>3.54</td>
+      <td>13.32</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>107843</th>
+      <td>3.65</td>
+      <td>14.07</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>107844</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.09</td>
+    </tr>
+    <tr>
+      <th>269321</th>
+      <td>4.69</td>
+      <td>14.76</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>269611</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.26</td>
+    </tr>
+    <tr>
+      <th>538833</th>
+      <td>4.95</td>
+      <td>13.38</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>539223</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.48</td>
+    </tr>
+    <tr>
+      <th>1078447</th>
+      <td>6.01</td>
+      <td>15.13</td>
+      <td>1.04</td>
+    </tr>
+    <tr>
+      <th>2156894</th>
+      <td>10.12</td>
+      <td>17.78</td>
+      <td>1.98</td>
+    </tr>
+    <tr>
+      <th>4313788</th>
+      <td>14.81</td>
+      <td>24.00</td>
+      <td>4.09</td>
+    </tr>
+    <tr>
+      <th rowspan="13" valign="top">rf</th>
+      <th>10784</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.07</td>
+    </tr>
+    <tr>
+      <th>10921</th>
+      <td>7.38</td>
+      <td>49.53</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>53922</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.21</td>
+    </tr>
+    <tr>
+      <th>54175</th>
+      <td>9.41</td>
+      <td>54.38</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>107843</th>
+      <td>11.42</td>
+      <td>66.37</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>107844</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.47</td>
+    </tr>
+    <tr>
+      <th>269321</th>
+      <td>15.26</td>
+      <td>74.48</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>269611</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.43</td>
+    </tr>
+    <tr>
+      <th>538833</th>
+      <td>19.69</td>
+      <td>81.02</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>539223</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.15</td>
+    </tr>
+    <tr>
+      <th>1078447</th>
+      <td>29.91</td>
+      <td>92.76</td>
+      <td>9.34</td>
+    </tr>
+    <tr>
+      <th>2156894</th>
+      <td>49.65</td>
+      <td>127.65</td>
+      <td>20.50</td>
+    </tr>
+    <tr>
+      <th>4313788</th>
+      <td>97.63</td>
+      <td>175.08</td>
+      <td>43.02</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Las filas con tamaños ligeramente distintos entre entornos (por ejemplo, 10.784 frente a 10.921)
+se deben a que cada entorno toma su propia submuestra aleatoria; con el entrenamiento completo y
+las réplicas los tamaños son idénticos.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nombres_mod</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"lr"</span><span class="p">:</span> <span class="s2">"Regresión logística"</span><span class="p">,</span> <span class="s2">"dt"</span><span class="p">:</span> <span class="s2">"Árbol (prof. 10)"</span><span class="p">,</span> <span class="s2">"rf"</span><span class="p">:</span> <span class="s2">"Bosque (50 árboles, prof. 10)"</span><span class="p">}</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">mod</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="p">(</span><span class="s2">"lr"</span><span class="p">,</span> <span class="s2">"dt"</span><span class="p">,</span> <span class="s2">"rf"</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">ent</span><span class="p">,</span> <span class="n">g</span><span class="p">),</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">escala</span><span class="p">[</span><span class="n">escala</span><span class="p">[</span><span class="s2">"modelo"</span><span class="p">]</span> <span class="o">==</span> <span class="n">mod</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"entorno"</span><span class="p">),</span> <span class="p">[</span><span class="s2">"#DD8452"</span><span class="p">,</span> <span class="s2">"#C44E52"</span><span class="p">,</span> <span class="s2">"#4C72B0"</span><span class="p">]):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"n_train"</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s2">"n_train"</span><span class="p">],</span> <span class="n">g</span><span class="p">[</span><span class="s2">"t_ajuste_s"</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">ent</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Filas de entrenamiento"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Tiempo de un ajuste (s)"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">nombres_mod</span><span class="p">[</span><span class="n">mod</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">"Tiempo de ajuste según el volumen de datos (línea punteada: tamaño real del entrenamiento)"</span><span class="p">,</span>
+             <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"11_escala"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/29baf38a7e41d5bc439c451661063f7ae88ea458e02c993649e01f38fe97bbc6.png" src="_images/29baf38a7e41d5bc439c451661063f7ae88ea458e02c993649e01f38fe97bbc6.png" />
+</div>
+</div>
+<p>El gráfico en escala log-log muestra dos regímenes. Con pocos datos, el tiempo de PySpark es casi
+constante (entre 2 y 7 s con 40 particiones, entre 9 y 54 s con 400): es el costo fijo de
+programar trabajos y tareas, que no depende del volumen. scikit-learn, en cambio, crece casi
+proporcionalmente al número de filas desde fracciones de segundo. A medida que crecen los datos,
+el costo fijo de Spark pesa menos y las curvas se acercan.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cruces</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"lr"</span><span class="p">,</span> <span class="s2">"dt"</span><span class="p">,</span> <span class="s2">"rf"</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">escala</span><span class="p">[</span><span class="n">escala</span><span class="p">[</span><span class="s2">"modelo"</span><span class="p">]</span> <span class="o">==</span> <span class="n">mod</span><span class="p">]</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"n_train"</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s2">"entorno"</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s2">"t_ajuste_s"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ent</span> <span class="ow">in</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"PySpark"</span><span class="p">)]:</span>
+        <span class="n">gana</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="n">ent</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="s2">"scikit-learn"</span><span class="p">]]</span>
+        <span class="n">cruces</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"modelo"</span><span class="p">:</span> <span class="n">nombres_mod</span><span class="p">[</span><span class="n">mod</span><span class="p">],</span> <span class="s2">"configuración"</span><span class="p">:</span> <span class="n">ent</span><span class="p">,</span>
+                       <span class="s2">"PySpark más rápido desde (filas)"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">gana</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gana</span><span class="p">)</span> <span class="k">else</span> <span class="s2">"no ocurre (≤ 4,3 M)"</span><span class="p">,</span>
+                       <span class="s2">"cociente PySpark/sklearn con 1,08 M"</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">ent</span><span class="p">]</span> <span class="o">/</span> <span class="n">t</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="s2">"scikit-learn"</span><span class="p">]})</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">cruces</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>modelo</th>
+      <th>configuración</th>
+      <th>PySpark más rápido desde (filas)</th>
+      <th>cociente PySpark/sklearn con 1,08 M</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Regresión logística</td>
+      <td>PySpark (40 part.)</td>
+      <td>no ocurre (≤ 4,3 M)</td>
+      <td>5.76</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Regresión logística</td>
+      <td>PySpark (400 part.)</td>
+      <td>no ocurre (≤ 4,3 M)</td>
+      <td>14.50</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Árbol (prof. 10)</td>
+      <td>PySpark (40 part.)</td>
+      <td>2,156,894</td>
+      <td>1.19</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Árbol (prof. 10)</td>
+      <td>PySpark (400 part.)</td>
+      <td>no ocurre (≤ 4,3 M)</td>
+      <td>3.46</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Bosque (50 árboles, prof. 10)</td>
+      <td>PySpark (40 part.)</td>
+      <td>no ocurre (≤ 4,3 M)</td>
+      <td>3.20</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Bosque (50 árboles, prof. 10)</td>
+      <td>PySpark (400 part.)</td>
+      <td>no ocurre (≤ 4,3 M)</td>
+      <td>9.93</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p><strong>Solo el árbol cruza.</strong> Con 40 particiones, PySpark ajusta el árbol más rápido que scikit-learn
+desde unos 2,2 millones de filas (11,7 s frente a 14,0 s) y con 4,3 millones la ventaja es de
+1,5 veces (18,7 s frente a 28,6 s). La razón es que <code class="docutils literal notranslate"><span class="pre">DecisionTreeClassifier</span></code> de scikit-learn
+usa un solo núcleo, mientras que Spark reparte cada pasada entre los 10; el costo marginal por
+millón de filas es de unos 3,3 s en Spark frente a 6,7 s en scikit-learn.</p>
+<p><strong>La regresión logística y el bosque no cruzan</strong> en el rango medido, aunque la brecha se cierra
+(de 5,8 a 3,6 veces en la regresión logística y de 3,2 a 2,3 veces en el bosque, entre 1,08 y 4,3
+millones de filas). En estos dos casos scikit-learn también usa todo el equipo: <code class="docutils literal notranslate"><span class="pre">lbfgs</span></code> se apoya
+en operaciones matriciales vectorizadas y el bosque reparte los árboles entre los 10 núcleos con
+<code class="docutils literal notranslate"><span class="pre">n_jobs=-1</span></code>. Su costo marginal por millón de filas (0,9 s y 10,4 s) es menor que el de Spark
+(2,7 s y 20,9 s), de modo que en una sola máquina Spark no los alcanzaría con más datos. El
+límite de scikit-learn es otro: necesita la matriz completa en memoria (4,3 millones de filas
+ocupan 2,5 GB en <code class="docutils literal notranslate"><span class="pre">float64</span></code>), y con unos 100 millones de filas (unos 60 GB) ya no cabría en los
+24 GB del equipo. A partir de ese volumen, o con un clúster de varias máquinas, PySpark deja de
+ser más lento y pasa a ser la única opción.</p>
+<p>Con 400 particiones Spark no supera a scikit-learn en ningún caso y es entre 1,6 y 6,7 veces más
+lento que con 40; la penalización es mayor cuanto menos datos hay por partición.</p>
+</section>
+<section id="efecto-de-las-condiciones-obligatorias-de-spark">
+<h2>11.2 Efecto de las condiciones obligatorias de Spark<a class="headerlink" href="#efecto-de-las-condiciones-obligatorias-de-spark" title="Link to this heading">#</a></h2>
+<p>Cada fila cambia <strong>un</strong> factor respecto a la configuración del capítulo 7 (sesión obligatoria:
+400 particiones de shuffle, 8 GB, <code class="docutils literal notranslate"><span class="pre">memory.fraction</span></code> 0,8 y <code class="docutils literal notranslate"><span class="pre">storageFraction</span></code> 0,3; datos en 40
+particiones con caché <code class="docutils literal notranslate"><span class="pre">MEMORY_AND_DISK</span></code>; <code class="docutils literal notranslate"><span class="pre">CrossValidator</span></code> con <code class="docutils literal notranslate"><span class="pre">parallelism=1</span></code>) y mide la
+validación cruzada completa de la regresión logística (3 valores de <code class="docutils literal notranslate"><span class="pre">regParam</span></code> × 3 pliegues +
+reajuste) y del árbol (3 profundidades × 3 pliegues + reajuste) con el entrenamiento completo.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variantes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"capítulo 7 (datos en 40 particiones)"</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">"datos en 400 particiones (= shuffle obligatorio)"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"particiones"</span><span class="p">:</span> <span class="mi">400</span><span class="p">},</span>
+    <span class="s2">"datos en 10 particiones (1 por núcleo)"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"particiones"</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+    <span class="s2">"memoria del driver 2 GB"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"config"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"spark.driver.memory"</span><span class="p">:</span> <span class="s2">"2g"</span><span class="p">,</span> <span class="s2">"spark.executor.memory"</span><span class="p">:</span> <span class="s2">"2g"</span><span class="p">}},</span>
+    <span class="s2">"fracciones de memoria por defecto (0,6 / 0,5)"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"config"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"spark.memory.fraction"</span><span class="p">:</span> <span class="s2">"0.6"</span><span class="p">,</span> <span class="s2">"spark.memory.storageFraction"</span><span class="p">:</span> <span class="s2">"0.5"</span><span class="p">}},</span>
+    <span class="s2">"CrossValidator parallelism = 3"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"paralelismo"</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+<span class="p">}</span>
+<span class="n">filas</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">nombre</span><span class="p">,</span> <span class="n">extra</span> <span class="ow">in</span> <span class="n">variantes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">tarea</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"lr_cv"</span><span class="p">,</span> <span class="s2">"dt_cv"</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">spark_exp</span><span class="p">({</span><span class="s2">"tarea"</span><span class="p">:</span> <span class="n">tarea</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">})</span>
+        <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"variante"</span><span class="p">:</span> <span class="n">nombre</span><span class="p">,</span> <span class="s2">"modelo"</span><span class="p">:</span> <span class="s2">"Regresión logística"</span> <span class="k">if</span> <span class="n">tarea</span> <span class="o">==</span> <span class="s2">"lr_cv"</span> <span class="k">else</span> <span class="s2">"Árbol"</span><span class="p">,</span>
+                      <span class="s2">"t_cv (s)"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"t_cv_s"</span><span class="p">],</span> <span class="s2">"AUC prueba"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"auc_test"</span><span class="p">],</span>
+                      <span class="s2">"caché en memoria (MB)"</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cache_memoria_mb"</span><span class="p">),</span> <span class="s2">"caché en disco (MB)"</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cache_disco_mb"</span><span class="p">)})</span>
+<span class="n">cond</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">filas</span><span class="p">)</span>
+<span class="n">cond</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">RESULTADOS</span> <span class="o">/</span> <span class="s2">"exp_condiciones.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">cond</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"variante"</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s2">"modelo"</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s2">"t_cv (s)"</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">variantes</span><span class="p">)]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>modelo</th>
+      <th>Regresión logística</th>
+      <th>Árbol</th>
+    </tr>
+    <tr>
+      <th>variante</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>capítulo 7 (datos en 40 particiones)</th>
+      <td>139.8</td>
+      <td>70.0</td>
+    </tr>
+    <tr>
+      <th>datos en 400 particiones (= shuffle obligatorio)</th>
+      <td>319.2</td>
+      <td>807.7</td>
+    </tr>
+    <tr>
+      <th>datos en 10 particiones (1 por núcleo)</th>
+      <td>122.4</td>
+      <td>42.9</td>
+    </tr>
+    <tr>
+      <th>memoria del driver 2 GB</th>
+      <td>137.7</td>
+      <td>78.6</td>
+    </tr>
+    <tr>
+      <th>fracciones de memoria por defecto (0,6 / 0,5)</th>
+      <td>137.4</td>
+      <td>69.6</td>
+    </tr>
+    <tr>
+      <th>CrossValidator parallelism = 3</th>
+      <td>135.2</td>
+      <td>71.3</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<ul class="simple">
+<li><p><strong>Número de particiones</strong>: es el factor que más pesa. Con los datos en 400 particiones, la
+validación cruzada tarda 2,3 veces más en la regresión logística (319 s frente a 140 s) y 11,5
+veces más en el árbol (808 s frente a 70 s): cada tarea procesa unas 2.700 filas y dedica más
+tiempo a su programación y a combinar los histogramas que a calcular. Con 10 particiones (una
+por núcleo) es todavía algo más rápido (122 s y 43 s).</p></li>
+<li><p><strong>Memoria del driver (2 GB frente a 8 GB) y fracciones de memoria</strong>: efectos pequeños y sin un
+patrón claro (entre −2 s y +9 s). Los datos cacheados ocupan unos 151 MB en memoria y nada en
+disco, muy por debajo de cualquiera de los límites: con este volumen la configuración de memoria
+del enunciado no restringe nada.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">CrossValidator(parallelism=3)</span></code></strong>: sin ganancia (135 s y 71 s frente a 140 s y 70 s), porque
+cada ajuste ya ocupa los 10 núcleos.</p></li>
+</ul>
+<p>El AUC de prueba es el mismo en todas las variantes (0,7171 en la regresión logística y entre
+0,7009 y 0,7015 en el árbol): la configuración cambia el tiempo, no el modelo.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cond</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>variante</th>
+      <th>modelo</th>
+      <th>t_cv (s)</th>
+      <th>AUC prueba</th>
+      <th>caché en memoria (MB)</th>
+      <th>caché en disco (MB)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>capítulo 7 (datos en 40 particiones)</td>
+      <td>Regresión logística</td>
+      <td>139.8354</td>
+      <td>0.7171</td>
+      <td>150.7736</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>capítulo 7 (datos en 40 particiones)</td>
+      <td>Árbol</td>
+      <td>69.9965</td>
+      <td>0.7015</td>
+      <td>150.7736</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>datos en 400 particiones (= shuffle obligatorio)</td>
+      <td>Regresión logística</td>
+      <td>319.2310</td>
+      <td>0.7171</td>
+      <td>151.8941</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>datos en 400 particiones (= shuffle obligatorio)</td>
+      <td>Árbol</td>
+      <td>807.7333</td>
+      <td>0.7015</td>
+      <td>151.8941</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>datos en 10 particiones (1 por núcleo)</td>
+      <td>Regresión logística</td>
+      <td>122.4397</td>
+      <td>0.7171</td>
+      <td>150.8134</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>datos en 10 particiones (1 por núcleo)</td>
+      <td>Árbol</td>
+      <td>42.9478</td>
+      <td>0.7009</td>
+      <td>150.8134</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>memoria del driver 2 GB</td>
+      <td>Regresión logística</td>
+      <td>137.7460</td>
+      <td>0.7171</td>
+      <td>150.7736</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>memoria del driver 2 GB</td>
+      <td>Árbol</td>
+      <td>78.6145</td>
+      <td>0.7015</td>
+      <td>150.7736</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>fracciones de memoria por defecto (0,6 / 0,5)</td>
+      <td>Regresión logística</td>
+      <td>137.3726</td>
+      <td>0.7171</td>
+      <td>150.7736</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>fracciones de memoria por defecto (0,6 / 0,5)</td>
+      <td>Árbol</td>
+      <td>69.5851</td>
+      <td>0.7015</td>
+      <td>150.7736</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>CrossValidator parallelism = 3</td>
+      <td>Regresión logística</td>
+      <td>135.2090</td>
+      <td>0.7171</td>
+      <td>150.7736</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>CrossValidator parallelism = 3</td>
+      <td>Árbol</td>
+      <td>71.3452</td>
+      <td>0.7015</td>
+      <td>150.7736</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<section id="cache">
+<h3>Caché<a class="headerlink" href="#cache" title="Link to this heading">#</a></h3>
+<p>Sin <code class="docutils literal notranslate"><span class="pre">persist</span></code>, cada pasada de un algoritmo iterativo vuelve a ejecutar todo el linaje: leer y
+descomprimir el CSV de 1,6 GB en una sola partición, construir las variables, unir con la
+partición y aplicar el <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code>. Una validación cruzada completa sin caché tomaría horas, así que
+se compara un ajuste de la regresión logística con exactamente 10 iteraciones de L-BFGS, con y sin
+caché, partiendo en ambos casos del CSV original.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cache</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span>
+    <span class="p">{</span><span class="s2">"caché"</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">spark_exp</span><span class="p">({</span><span class="s2">"tarea"</span><span class="p">:</span> <span class="s2">"lr_fit"</span><span class="p">,</span> <span class="s2">"max_iter"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">"iter_fijas"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                                                  <span class="s2">"desde_csv"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"cache"</span><span class="p">:</span> <span class="n">c</span><span class="p">})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"t_preparacion_s"</span><span class="p">,</span> <span class="s2">"t_ajuste_s"</span><span class="p">,</span> <span class="s2">"auc_test"</span><span class="p">)}}</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"caché"</span><span class="p">)</span>
+<span class="n">cache</span><span class="p">[</span><span class="s2">"t_por_iteración (s)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache</span><span class="p">[</span><span class="s2">"t_ajuste_s"</span><span class="p">]</span> <span class="o">/</span> <span class="mi">10</span>
+<span class="n">cache</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>t_preparacion_s</th>
+      <th>t_ajuste_s</th>
+      <th>auc_test</th>
+      <th>t_por_iteración (s)</th>
+    </tr>
+    <tr>
+      <th>caché</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>True</th>
+      <td>35.70</td>
+      <td>5.16</td>
+      <td>0.72</td>
+      <td>0.52</td>
+    </tr>
+    <tr>
+      <th>False</th>
+      <td>100.61</td>
+      <td>48.98</td>
+      <td>0.72</td>
+      <td>4.90</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Sin caché, cada iteración de L-BFGS cuesta 4,9 s frente a 0,52 s con caché (9,4 veces más),
+porque vuelve a leer y descomprimir el CSV y a reconstruir las variables. La regresión logística
+del capítulo 7 hizo 39 iteraciones en el reajuste final y, con 10 ajustes de un número parecido
+de iteraciones, del orden de 400 en total; sin caché, solo las iteraciones habrían sumado más de
+media hora, frente a menos de 4 minutos. La preparación también se encarece (101 s frente a 36 s) porque sin caché la base
+intermedia se recalcula en cada paso del <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code>.</p>
+</section>
+</section>
+<section id="discretizacion-de-los-arboles-maxbins">
+<h2>11.3 Discretización de los árboles (<code class="docutils literal notranslate"><span class="pre">maxBins</span></code>)<a class="headerlink" href="#discretizacion-de-los-arboles-maxbins" title="Link to this heading">#</a></h2>
+<p>Spark evalúa como candidatos de corte a lo sumo <code class="docutils literal notranslate"><span class="pre">maxBins</span> <span class="pre">−</span> <span class="pre">1</span></code> umbrales por variable continua,
+elegidos con cuantiles de una muestra; scikit-learn evalúa todos los valores distintos. Se ajusta
+árboles de profundidad 5, 10 y 15 con <code class="docutils literal notranslate"><span class="pre">maxBins</span></code> ∈ {32, 128, 512} y se comparan con el árbol
+exacto de scikit-learn de la misma profundidad. La profundidad 5 se incluye porque en la
+validación cruzada del capítulo 7 es donde más difieren los dos entornos (AUC 0,651 en Spark
+frente a 0,695 en scikit-learn).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filas</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">prof</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">medir_sk</span><span class="p">():</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="n">prof</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"X_train"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"y_train"</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"t_ajuste_s"</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">,</span>
+                <span class="s2">"auc_test"</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"y_test"</span><span class="p">],</span> <span class="n">a</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"X_test"</span><span class="p">])[:,</span> <span class="mi">1</span><span class="p">])}</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">sk_exp</span><span class="p">(</span><span class="sa">f</span><span class="s2">"arbol_exacto|</span><span class="si">{</span><span class="n">prof</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">medir_sk</span><span class="p">)</span>
+    <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"profundidad"</span><span class="p">:</span> <span class="n">prof</span><span class="p">,</span> <span class="s2">"implementación"</span><span class="p">:</span> <span class="s2">"scikit-learn (cortes exactos)"</span><span class="p">,</span> <span class="o">**</span><span class="n">r</span><span class="p">})</span>
+    <span class="k">for</span> <span class="n">mb</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">512</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">spark_exp</span><span class="p">({</span><span class="s2">"tarea"</span><span class="p">:</span> <span class="s2">"maxbins"</span><span class="p">,</span> <span class="s2">"maxbins"</span><span class="p">:</span> <span class="n">mb</span><span class="p">,</span> <span class="s2">"profundidad"</span><span class="p">:</span> <span class="n">prof</span><span class="p">})</span>
+        <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"profundidad"</span><span class="p">:</span> <span class="n">prof</span><span class="p">,</span> <span class="s2">"implementación"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"PySpark maxBins=</span><span class="si">{</span><span class="n">mb</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                      <span class="s2">"t_ajuste_s"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"t_ajuste_s"</span><span class="p">],</span> <span class="s2">"auc_test"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"auc_test"</span><span class="p">]})</span>
+<span class="n">bins</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">filas</span><span class="p">)</span>
+<span class="n">bins</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">RESULTADOS</span> <span class="o">/</span> <span class="s2">"exp_maxbins.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">bins</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>profundidad</th>
+      <th>implementación</th>
+      <th>t_ajuste_s</th>
+      <th>auc_test</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5</td>
+      <td>scikit-learn (cortes exactos)</td>
+      <td>3.8467</td>
+      <td>0.6950</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5</td>
+      <td>PySpark maxBins=32</td>
+      <td>4.8093</td>
+      <td>0.6490</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5</td>
+      <td>PySpark maxBins=128</td>
+      <td>4.3896</td>
+      <td>0.6542</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>5</td>
+      <td>PySpark maxBins=512</td>
+      <td>4.5277</td>
+      <td>0.6547</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>10</td>
+      <td>scikit-learn (cortes exactos)</td>
+      <td>6.8109</td>
+      <td>0.7041</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>10</td>
+      <td>PySpark maxBins=32</td>
+      <td>7.5782</td>
+      <td>0.7015</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>10</td>
+      <td>PySpark maxBins=128</td>
+      <td>7.6603</td>
+      <td>0.7017</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>10</td>
+      <td>PySpark maxBins=512</td>
+      <td>8.4685</td>
+      <td>0.7015</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>15</td>
+      <td>scikit-learn (cortes exactos)</td>
+      <td>9.4831</td>
+      <td>0.6762</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>15</td>
+      <td>PySpark maxBins=32</td>
+      <td>14.6452</td>
+      <td>0.6799</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>15</td>
+      <td>PySpark maxBins=128</td>
+      <td>18.1738</td>
+      <td>0.6810</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>15</td>
+      <td>PySpark maxBins=512</td>
+      <td>29.2745</td>
+      <td>0.6815</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Aumentar <code class="docutils literal notranslate"><span class="pre">maxBins</span></code> de 32 a 512 apenas cambia el AUC (de 0,649 a 0,655 a profundidad 5; de 0,7015 a
+0,7017 a profundidad 10) y sí encarece el ajuste a profundidad 15 (de 15 s a 29 s). Con 32
+intervalos por variable ya se capturan los cortes relevantes: la discretización <strong>no</strong> explica la
+diferencia entre entornos a profundidad 5. A profundidad 15, Spark incluso supera ligeramente al
+árbol exacto (0,680 frente a 0,676), porque los cortes aproximados sobreajustan algo menos.</p>
+<section id="poda-de-hojas-con-la-misma-clase">
+<h3>Poda de hojas con la misma clase<a class="headerlink" href="#poda-de-hojas-con-la-misma-clase" title="Link to this heading">#</a></h3>
+<p>Si no es la discretización, ¿qué separa a los árboles poco profundos? Al terminar de construir un
+árbol, Spark <strong>une las hojas hermanas que predicen la misma clase</strong> (comportamiento incorporado
+en Spark 2.4, SPARK-3159, sin parámetro público para desactivarlo). Para una regla de
+clasificación esa poda es inocua, porque no cambia ninguna predicción de clase. Pero con 80 % de
+préstamos pagados casi todas las hojas predicen «pagado», así que la poda elimina cortes que sí
+separan préstamos con probabilidades de default muy distintas.
+El AUC depende de esas probabilidades, no de la clase. Se compara el número de hojas y el AUC de
+árboles de profundidad 2 a 15 en ambos entornos.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filas</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">prof</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">medir_sk</span><span class="p">():</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="n">prof</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"X_train"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"y_train"</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"hojas"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">get_n_leaves</span><span class="p">()),</span>
+                <span class="s2">"auc_test"</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"y_test"</span><span class="p">],</span> <span class="n">a</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"X_test"</span><span class="p">])[:,</span> <span class="mi">1</span><span class="p">])}</span>
+    <span class="n">r_sk</span> <span class="o">=</span> <span class="n">sk_exp</span><span class="p">(</span><span class="sa">f</span><span class="s2">"poda|</span><span class="si">{</span><span class="n">prof</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">medir_sk</span><span class="p">)</span>
+    <span class="n">r_sp</span> <span class="o">=</span> <span class="n">spark_exp</span><span class="p">({</span><span class="s2">"tarea"</span><span class="p">:</span> <span class="s2">"poda"</span><span class="p">,</span> <span class="s2">"profundidad"</span><span class="p">:</span> <span class="n">prof</span><span class="p">})</span>
+    <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"profundidad"</span><span class="p">:</span> <span class="n">prof</span><span class="p">,</span> <span class="s2">"hojas scikit-learn"</span><span class="p">:</span> <span class="n">r_sk</span><span class="p">[</span><span class="s2">"hojas"</span><span class="p">],</span> <span class="s2">"hojas PySpark"</span><span class="p">:</span> <span class="n">r_sp</span><span class="p">[</span><span class="s2">"hojas"</span><span class="p">],</span>
+                  <span class="s2">"AUC scikit-learn"</span><span class="p">:</span> <span class="n">r_sk</span><span class="p">[</span><span class="s2">"auc_test"</span><span class="p">],</span> <span class="s2">"AUC PySpark"</span><span class="p">:</span> <span class="n">r_sp</span><span class="p">[</span><span class="s2">"auc_test"</span><span class="p">]})</span>
+<span class="n">poda</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">filas</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"profundidad"</span><span class="p">)</span>
+<span class="n">poda</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">RESULTADOS</span> <span class="o">/</span> <span class="s2">"exp_poda.csv"</span><span class="p">)</span>
+<span class="n">poda</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>hojas scikit-learn</th>
+      <th>hojas PySpark</th>
+      <th>AUC scikit-learn</th>
+      <th>AUC PySpark</th>
+    </tr>
+    <tr>
+      <th>profundidad</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2</th>
+      <td>4</td>
+      <td>1</td>
+      <td>0.6709</td>
+      <td>0.5000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>8</td>
+      <td>1</td>
+      <td>0.6827</td>
+      <td>0.5000</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>32</td>
+      <td>6</td>
+      <td>0.6950</td>
+      <td>0.6490</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>958</td>
+      <td>558</td>
+      <td>0.7041</td>
+      <td>0.7015</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>12043</td>
+      <td>12052</td>
+      <td>0.6762</td>
+      <td>0.6799</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>La poda explica la diferencia. A profundidad 2 y 3, Spark termina con <strong>una sola hoja</strong>: todas las
+hojas predecían «pagado» y se fusionaron hasta la raíz, de modo que el árbol asigna la misma
+probabilidad a todos los préstamos y su AUC es exactamente 0,5, mientras que el árbol de
+scikit-learn, con 4 y 8 hojas, alcanza 0,671 y 0,683. A profundidad 5, la poda deja 6 hojas frente
+a 32 (AUC 0,649 frente a 0,695). Con más profundidad aparecen hojas con mayoría de defaults y la
+poda pierde importancia: a profundidad 10 Spark conserva 558 hojas frente a 958 (AUC 0,7015 frente
+a 0,7041) y a profundidad 15 el número de hojas es prácticamente el mismo. El mismo mecanismo
+explica por qué el bosque de Spark con árboles de profundidad 5 rinde menos que el de scikit-learn
+(capítulo 7). El gradient boosting no se ve afectado: sus árboles son de regresión y la poda solo
+une hojas con exactamente el mismo valor.</p>
+</section>
+</section>
+<section id="la-perdida-hinge-de-linearsvc">
+<h2>11.4 La pérdida <em>hinge</em> de <code class="docutils literal notranslate"><span class="pre">LinearSVC</span></code><a class="headerlink" href="#la-perdida-hinge-de-linearsvc" title="Link to this heading">#</a></h2>
+<p>En los capítulos 6 y 7 el SVM lineal obtiene un AUC cercano a 0,5. La causa está en la pérdida.
+Para un punto con etiqueta <span class="math notranslate nohighlight">\(y \in \{-1, +1\}\)</span> la pérdida <em>hinge</em> es <span class="math notranslate nohighlight">\(\max(0, 1 - y f(x))\)</span>. La
+solución trivial <span class="math notranslate nohighlight">\(w = 0\)</span>, <span class="math notranslate nohighlight">\(b = -1\)</span> (predecir «pagado» para todos con margen) tiene pérdida 0 en
+todos los préstamos pagados y 2 en cada default: pérdida media <span class="math notranslate nohighlight">\(2\pi\)</span>, con <span class="math notranslate nohighlight">\(\pi\)</span> = 0,20. Cuando
+las clases se solapan tanto como aquí, ningún hiperplano reduce la suma de pérdidas hinge por
+debajo de ese valor por más que una cantidad mínima, de modo que el óptimo queda pegado a
+<span class="math notranslate nohighlight">\(w \approx 0\)</span> y la dirección de <span class="math notranslate nohighlight">\(w\)</span>, que es lo único que determina el orden de las
+puntuaciones y por tanto el AUC, la fijan detalles numéricos del optimizador. Se verifica
+comparando la función objetivo de la solución de <code class="docutils literal notranslate"><span class="pre">liblinear</span></code> con la de la solución trivial, y
+repitiendo el ajuste con pesos que equilibran las clases (<code class="docutils literal notranslate"><span class="pre">class_weight=&quot;balanced&quot;</span></code> en
+scikit-learn, <code class="docutils literal notranslate"><span class="pre">weightCol</span></code> en Spark), con la pérdida <em>squared hinge</em> y con la regresión logística
+como referencia.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lam</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="n">C</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">lam</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+<span class="n">ys</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">d</span><span class="p">[</span><span class="s2">"y_train"</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">objetivo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">w</span> <span class="o">@</span> <span class="n">w</span> <span class="o">+</span> <span class="n">C</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">ys</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"X_train"</span><span class="p">]</span> <span class="o">@</span> <span class="n">w</span> <span class="o">+</span> <span class="n">b</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">medir_svc</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">():</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">LinearSVC</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"X_train"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"y_train"</span><span class="p">])</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">intercept_</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"t_ajuste_s"</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">,</span> <span class="s2">"auc_test"</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"y_test"</span><span class="p">],</span> <span class="n">m</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"X_test"</span><span class="p">])),</span>
+                <span class="s2">"norma_w"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">w</span><span class="p">)),</span> <span class="s2">"intercepto"</span><span class="p">:</span> <span class="n">b</span><span class="p">,</span> <span class="s2">"objetivo_hinge"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">objetivo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)),</span>
+                <span class="s2">"iteraciones"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">n_iter_</span><span class="p">)}</span>
+    <span class="k">return</span> <span class="n">f</span>
+
+
+<span class="n">filas</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">nombre</span><span class="p">,</span> <span class="n">kw</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"hinge (como en el cap. 6)"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s2">"hinge"</span><span class="p">,</span> <span class="n">dual</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">),</span>
+                   <span class="s2">"hinge, clases balanceadas"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s2">"hinge"</span><span class="p">,</span> <span class="n">dual</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">class_weight</span><span class="o">=</span><span class="s2">"balanced"</span><span class="p">),</span>
+                   <span class="s2">"squared hinge"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s2">"squared_hinge"</span><span class="p">,</span> <span class="n">dual</span><span class="o">=</span><span class="kc">False</span><span class="p">)}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"entorno"</span><span class="p">:</span> <span class="s2">"scikit-learn"</span><span class="p">,</span> <span class="s2">"variante"</span><span class="p">:</span> <span class="n">nombre</span><span class="p">,</span> <span class="o">**</span><span class="n">sk_exp</span><span class="p">(</span><span class="sa">f</span><span class="s2">"svc|</span><span class="si">{</span><span class="n">nombre</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">medir_svc</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">))})</span>
+<span class="k">for</span> <span class="n">bal</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">spark_exp</span><span class="p">({</span><span class="s2">"tarea"</span><span class="p">:</span> <span class="s2">"svc"</span><span class="p">,</span> <span class="s2">"reg"</span><span class="p">:</span> <span class="n">lam</span><span class="p">,</span> <span class="s2">"balanceado"</span><span class="p">:</span> <span class="n">bal</span><span class="p">})</span>
+    <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"entorno"</span><span class="p">:</span> <span class="s2">"PySpark"</span><span class="p">,</span> <span class="s2">"variante"</span><span class="p">:</span> <span class="s2">"hinge, clases balanceadas"</span> <span class="k">if</span> <span class="n">bal</span> <span class="k">else</span> <span class="s2">"hinge (como en el cap. 7)"</span><span class="p">,</span>
+                  <span class="s2">"t_ajuste_s"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"t_ajuste_s"</span><span class="p">],</span> <span class="s2">"auc_test"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"auc_test"</span><span class="p">],</span> <span class="s2">"norma_w"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"norma_w"</span><span class="p">],</span>
+                  <span class="s2">"intercepto"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"intercepto"</span><span class="p">]})</span>
+<span class="n">svc</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">filas</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Objetivo hinge de la solución trivial (w = 0, b = −1): </span><span class="si">{</span><span class="n">objetivo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">'X_train'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="w"> </span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span><span class="si">:</span><span class="s2">,.1f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">svc</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Objetivo hinge de la solución trivial (w = 0, b = −1): 39,956.7
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>entorno</th>
+      <th>variante</th>
+      <th>t_ajuste_s</th>
+      <th>auc_test</th>
+      <th>norma_w</th>
+      <th>intercepto</th>
+      <th>objetivo_hinge</th>
+      <th>iteraciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>scikit-learn</td>
+      <td>hinge (como en el cap. 6)</td>
+      <td>140.4427</td>
+      <td>0.4644</td>
+      <td>0.4813</td>
+      <td>-0.3646</td>
+      <td>39956.8314</td>
+      <td>932.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>scikit-learn</td>
+      <td>hinge, clases balanceadas</td>
+      <td>52.8862</td>
+      <td>0.7171</td>
+      <td>1.2698</td>
+      <td>-0.0366</td>
+      <td>75802.3646</td>
+      <td>5000.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>scikit-learn</td>
+      <td>squared hinge</td>
+      <td>4.1132</td>
+      <td>0.7170</td>
+      <td>0.4439</td>
+      <td>-0.2147</td>
+      <td>57783.3959</td>
+      <td>5.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>PySpark</td>
+      <td>hinge (como en el cap. 7)</td>
+      <td>11.0492</td>
+      <td>0.6752</td>
+      <td>0.0463</td>
+      <td>-1.0258</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>PySpark</td>
+      <td>hinge, clases balanceadas</td>
+      <td>6.6309</td>
+      <td>0.7171</td>
+      <td>1.3222</td>
+      <td>-0.2578</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Con <span class="math notranslate nohighlight">\(\lambda = 10^{-5}\)</span> (<span class="math notranslate nohighlight">\(C\)</span> = 0,0927):</p>
+<ul class="simple">
+<li><p>El SVM <em>hinge</em> de scikit-learn alcanza una función objetivo de 39.956,8, prácticamente la de la
+solución trivial (39.956,7): <code class="docutils literal notranslate"><span class="pre">liblinear</span></code> está en el óptimo y ese óptimo es casi «todos pagados».
+La dirección de <span class="math notranslate nohighlight">\(w\)</span> (norma 0,48) es ruido y el AUC de prueba es 0,464, por debajo del azar.</p></li>
+<li><p>El SVM de Spark, detenido a las 100 iteraciones, tiene una norma de <span class="math notranslate nohighlight">\(w\)</span> de solo 0,046 y un
+intercepto de −1,026, muy cerca de la solución trivial; aun así conserva una dirección útil
+(AUC 0,675).</p></li>
+<li><p><strong>Con clases balanceadas</strong> el problema deja de ser degenerado y ambos entornos obtienen un AUC de
+0,7171, el mismo de la regresión logística. La <em>squared hinge</em> (valor por defecto de
+scikit-learn) también llega a 0,717, en 4 s.</p></li>
+</ul>
+<p>La pérdida <em>hinge</em> sin pesos, que el enunciado impone para que ambos entornos minimicen la misma
+función, es la causa de que el SVM lineal parezca un mal modelo en los capítulos 6 a 8. El
+hiperplano en sí no es el problema: con una pérdida o una ponderación adecuadas, el SVM lineal
+rinde como la regresión logística.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "ml-lending"
+        },
+        kernelOptions: {
+            name: "ml-lending",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'ml-lending'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="10_comparacion_resultados.html"
+       title="página anterior">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">anterior</p>
+        <p class="prev-next-title">10. Comparación de resultados</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="12_reflexion_critica.html"
+       title="siguiente página">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">siguiente</p>
+        <p class="prev-next-title">12. Reflexión crítica</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contenido
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-partir-de-que-volumen-supera-pyspark-a-scikit-learn">11.1 ¿A partir de qué volumen supera PySpark a scikit-learn?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#efecto-de-las-condiciones-obligatorias-de-spark">11.2 Efecto de las condiciones obligatorias de Spark</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache">Caché</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#discretizacion-de-los-arboles-maxbins">11.3 Discretización de los árboles (<code class="docutils literal notranslate"><span class="pre">maxBins</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#poda-de-hojas-con-la-misma-clase">Poda de hojas con la misma clase</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#la-perdida-hinge-de-linearsvc">11.4 La pérdida <em>hinge</em> de <code class="docutils literal notranslate"><span class="pre">LinearSVC</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+Por Camilo Molina Guerrero
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

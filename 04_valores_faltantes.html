@@ -1,0 +1,2828 @@
+
+<!DOCTYPE html>
+
+
+<html lang="es" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>4. Valores faltantes &#8212; Default en préstamos de Lending Club: scikit-learn frente a PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="_static/documentation_options.js?v=78d55cf8"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Haz clic para mostrar';</script>
+    <script>let toggleHintHide = 'Haz clic para ocultar';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/translations.js?v=d190bf04"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]]}, "options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '04_valores_faltantes';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="next" title="Resumen ejecutivo del EDA" href="04b_resumen_eda.html" />
+    <link rel="prev" title="3. Análisis bidimensional" href="03_eda_bivariado.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="es"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Saltar al contenido principal</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Volver arriba</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Advertencia de versión"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Navegación del sitio">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="En esta página">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Default en préstamos de Lending Club: scikit-learn frente a PySpark</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Default en préstamos de Lending Club: scikit-learn frente a PySpark
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Análisis exploratorio</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_carga_vision_general.html">1. Carga inicial y visión general</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_eda_univariado.html">2. Análisis unidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_eda_bivariado.html">3. Análisis bidimensional</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">4. Valores faltantes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04b_resumen_eda.html">Resumen ejecutivo del EDA</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocesamiento y modelado</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="05_preprocesamiento.html">5. Preprocesamiento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_modelado_sklearn.html">6. Modelado con scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_modelado_pyspark.html">7. Modelado con PySpark</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Evaluación y comparación</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="08_comparacion_estadistica.html">8. Comparación estadística de los modelos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_lime.html">9. Interpretabilidad con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_comparacion_resultados.html">10. Comparación de resultados</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_experimentos.html">11. Experimentos complementarios</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Discusión</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="12_reflexion_critica.html">12. Reflexión crítica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_referencias.html">Referencias</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/camilomolinaguerrero-sudo/Clasificaci-n-de-pr-stamos-Lending-Club" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Repositorio de origen"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Descarga esta pagina">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/04_valores_faltantes.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Descargar archivo fuente"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Imprimir en PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Modo de pantalla completa"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Tema" data-bs-title="Tema"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Claro"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Oscuro"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="Sistema"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>4. Valores faltantes</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contenido </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#faltantes-por-columna">4.1 Faltantes por columna</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#patron-de-los-faltantes">4.2 Patrón de los faltantes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#matriz-de-nulidad">4.2.1 Matriz de nulidad</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#faltantes-por-ano-de-emision">4.2.2 Faltantes por año de emisión</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#correlacion-de-nulidad-entre-las-variables-candidatas">4.2.3 Correlación de nulidad entre las variables candidatas</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#concentracion-de-faltantes-por-fila">4.2.4 Concentración de faltantes por fila</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dependen-los-faltantes-de-la-variable-objetivo">4.3 ¿Dependen los faltantes de la variable objetivo?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prueba-mcar-de-little">4.4 Prueba MCAR de Little</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-de-tratamiento-por-variable">4.5 Plan de tratamiento por variable</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="valores-faltantes">
+<h1>4. Valores faltantes<a class="headerlink" href="#valores-faltantes" title="Link to this heading">#</a></h1>
+<p>Sección 9.10.4.1.4 del enunciado. Se cuantifican los faltantes de las 154 columnas del archivo
+intermedio (las 152 originales más <code class="docutils literal notranslate"><span class="pre">antig_credito_meses</span></code> e <code class="docutils literal notranslate"><span class="pre">issue_year</span></code>), se examina
+su patrón (por columnas, por filas y por año de emisión), se evalúa si dependen de la variable
+objetivo y se contrasta la hipótesis de faltantes completamente al azar (MCAR) con la prueba de
+Little (1988). El capítulo termina con el plan de tratamiento por variable.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"../src"</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">missingno</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">msno</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">estadistica</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">est</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+
+<span class="n">u</span><span class="o">.</span><span class="n">estilo</span><span class="p">()</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">"display.max_columns"</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="s2">"display.width"</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="s2">"display.max_rows"</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">cargar_prestamos</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">"dti"</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"dti"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">),</span> <span class="s2">"dti"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> préstamos x </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columnas"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1,348,059 préstamos x 154 columnas
+</pre></div>
+</div>
+</div>
+</div>
+<section id="faltantes-por-columna">
+<h2>4.1 Faltantes por columna<a class="headerlink" href="#faltantes-por-columna" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">falt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"n_faltantes"</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="s2">"%"</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">df</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()})</span>
+<span class="n">falt</span><span class="p">[</span><span class="s2">"grupo"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">falt</span><span class="p">[</span><span class="s2">"%"</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+                       <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"0 %"</span><span class="p">,</span> <span class="s2">"(0, 5] %"</span><span class="p">,</span> <span class="s2">"(5, 30] %"</span><span class="p">,</span> <span class="s2">"(30, 70] %"</span><span class="p">,</span> <span class="s2">"&gt; 70 %"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">falt</span><span class="p">[</span><span class="s2">"grupo"</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
+<span class="n">falt</span><span class="p">[</span><span class="n">falt</span><span class="p">[</span><span class="s2">"n_faltantes"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"%"</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>grupo
+0 %           40
+(0, 5] %      30
+(5, 30] %     26
+(30, 70] %    16
+&gt; 70 %        42
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>n_faltantes</th>
+      <th>%</th>
+      <th>grupo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>member_id</th>
+      <td>1348059</td>
+      <td>100.00</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>next_pymnt_d</th>
+      <td>1345310</td>
+      <td>99.80</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>orig_projected_additional_accrued_interest</th>
+      <td>1344300</td>
+      <td>99.72</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>payment_plan_start_date</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_length</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_dpd</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_loan_status</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_start_date</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_payoff_balance_amount</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_last_payment_amount</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_amount</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>deferral_term</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_status</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_reason</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_type</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>hardship_end_date</th>
+      <td>1342305</td>
+      <td>99.57</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_mths_since_last_major_derog</th>
+      <td>1341414</td>
+      <td>99.51</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_revol_util</th>
+      <td>1329757</td>
+      <td>98.64</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>revol_bal_joint</th>
+      <td>1329430</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_collections_12_mths_ex_med</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_fico_range_high</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_inq_last_6mths</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_mort_acc</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_open_acc</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_open_act_il</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_num_rev_accts</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_chargeoff_within_12_mths</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_earliest_cr_line</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>sec_app_fico_range_low</th>
+      <td>1329429</td>
+      <td>98.62</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>verification_status_joint</th>
+      <td>1322464</td>
+      <td>98.10</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>dti_joint</th>
+      <td>1322262</td>
+      <td>98.09</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>annual_inc_joint</th>
+      <td>1322259</td>
+      <td>98.09</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>settlement_amount</th>
+      <td>1314773</td>
+      <td>97.53</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>debt_settlement_flag_date</th>
+      <td>1314773</td>
+      <td>97.53</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>settlement_date</th>
+      <td>1314773</td>
+      <td>97.53</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>settlement_status</th>
+      <td>1314773</td>
+      <td>97.53</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>settlement_term</th>
+      <td>1314773</td>
+      <td>97.53</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>settlement_percentage</th>
+      <td>1314773</td>
+      <td>97.53</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>desc</th>
+      <td>1222106</td>
+      <td>90.66</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>mths_since_last_record</th>
+      <td>1118644</td>
+      <td>82.98</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_bc_dlq</th>
+      <td>1029039</td>
+      <td>76.33</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>mths_since_last_major_derog</th>
+      <td>994309</td>
+      <td>73.76</td>
+      <td>&gt; 70 %</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_revol_delinq</th>
+      <td>898097</td>
+      <td>66.62</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>il_util</th>
+      <td>883043</td>
+      <td>65.50</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>mths_since_rcnt_il</th>
+      <td>824677</td>
+      <td>61.18</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>all_util</th>
+      <td>810514</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>total_cu_tl</th>
+      <td>810462</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>open_acc_6m</th>
+      <td>810462</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>inq_last_12m</th>
+      <td>810462</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>open_rv_12m</th>
+      <td>810461</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>open_rv_24m</th>
+      <td>810461</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>max_bal_bc</th>
+      <td>810461</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>inq_fi</th>
+      <td>810461</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>open_act_il</th>
+      <td>810461</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>open_il_12m</th>
+      <td>810461</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>total_bal_il</th>
+      <td>810461</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>open_il_24m</th>
+      <td>810461</td>
+      <td>60.12</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>mths_since_last_delinq</th>
+      <td>679942</td>
+      <td>50.44</td>
+      <td>(30, 70] %</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_inq</th>
+      <td>176820</td>
+      <td>13.12</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_tl_120dpd_2m</th>
+      <td>120150</td>
+      <td>8.91</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>mo_sin_old_il_acct</th>
+      <td>108324</td>
+      <td>8.04</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>emp_title</th>
+      <td>85944</td>
+      <td>6.38</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>emp_length</th>
+      <td>78545</td>
+      <td>5.83</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>pct_tl_nvr_dlq</th>
+      <td>70430</td>
+      <td>5.22</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>avg_cur_bal</th>
+      <td>70298</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_rev_accts</th>
+      <td>70277</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>mo_sin_old_rev_tl_op</th>
+      <td>70277</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>mo_sin_rcnt_rev_tl_op</th>
+      <td>70277</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>mo_sin_rcnt_tl</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_actv_bc_tl</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_actv_rev_tl</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>total_rev_hi_lim</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_bc_tl</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>total_il_high_credit_limit</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_op_rev_tl</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>tot_cur_bal</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_accts_ever_120_pd</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_tl_op_past_12m</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_tl_90g_dpd_24m</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_tl_30dpd</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_il_tl</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>tot_coll_amt</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>num_rev_tl_bal_gt_0</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>tot_hi_cred_lim</th>
+      <td>70276</td>
+      <td>5.21</td>
+      <td>(5, 30] %</td>
+    </tr>
+    <tr>
+      <th>bc_util</th>
+      <td>64661</td>
+      <td>4.80</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>percent_bc_gt_75</th>
+      <td>64304</td>
+      <td>4.77</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>bc_open_to_buy</th>
+      <td>63892</td>
+      <td>4.74</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_bc</th>
+      <td>62970</td>
+      <td>4.67</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>num_sats</th>
+      <td>58590</td>
+      <td>4.35</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>num_bc_sats</th>
+      <td>58590</td>
+      <td>4.35</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>acc_open_past_24mths</th>
+      <td>50030</td>
+      <td>3.71</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>total_bc_limit</th>
+      <td>50030</td>
+      <td>3.71</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>total_bal_ex_mort</th>
+      <td>50030</td>
+      <td>3.71</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>mort_acc</th>
+      <td>50030</td>
+      <td>3.71</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>title</th>
+      <td>16662</td>
+      <td>1.24</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>last_pymnt_d</th>
+      <td>2325</td>
+      <td>0.17</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>pub_rec_bankruptcies</th>
+      <td>1365</td>
+      <td>0.10</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>dti</th>
+      <td>909</td>
+      <td>0.07</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>revol_util</th>
+      <td>897</td>
+      <td>0.07</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>chargeoff_within_12_mths</th>
+      <td>145</td>
+      <td>0.01</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>collections_12_mths_ex_med</th>
+      <td>145</td>
+      <td>0.01</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>tax_liens</th>
+      <td>105</td>
+      <td>0.01</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>last_credit_pull_d</th>
+      <td>57</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>inq_last_6mths</th>
+      <td>30</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>earliest_cr_line</th>
+      <td>29</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>delinq_2yrs</th>
+      <td>29</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>open_acc</th>
+      <td>29</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>delinq_amnt</th>
+      <td>29</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>pub_rec</th>
+      <td>29</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>total_acc</th>
+      <td>29</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>acc_now_delinq</th>
+      <td>29</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>antig_credito_meses</th>
+      <td>29</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>annual_inc</th>
+      <td>4</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+    <tr>
+      <th>zip_code</th>
+      <td>1</td>
+      <td>0.00</td>
+      <td>(0, 5] %</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>De las 154 columnas del archivo intermedio (152 más <code class="docutils literal notranslate"><span class="pre">antig_credito_meses</span></code> e <code class="docutils literal notranslate"><span class="pre">issue_year</span></code>), 40 no
+tienen faltantes, 56 tienen menos de 30 %, 16 entre 30 % y 70 % y 42 más de 70 %. Las columnas
+con más de 70 % son, salvo tres, de tres tipos: variables de coprestatario (<code class="docutils literal notranslate"><span class="pre">sec_app_*</span></code>,
+<code class="docutils literal notranslate"><span class="pre">*_joint</span></code>, 98,1-99,5 %), variables de <em>hardship</em> y <em>settlement</em> (97,5-99,7 %, además posteriores a
+la originación) y variables de «meses desde el último evento» (<code class="docutils literal notranslate"><span class="pre">mths_since_last_record</span></code>,
+<code class="docutils literal notranslate"><span class="pre">mths_since_recent_bc_dlq</span></code>, <code class="docutils literal notranslate"><span class="pre">mths_since_last_major_derog</span></code>), cuyo faltante significa que el evento
+nunca ocurrió. Las otras tres son <code class="docutils literal notranslate"><span class="pre">member_id</span></code> (vacía), <code class="docutils literal notranslate"><span class="pre">desc</span></code> (texto libre, 90,7 %) y
+<code class="docutils literal notranslate"><span class="pre">next_pymnt_d</span></code> (99,8 %, posterior a la originación).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">con_falt</span> <span class="o">=</span> <span class="n">falt</span><span class="p">[</span><span class="n">falt</span><span class="p">[</span><span class="s2">"%"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"%"</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+<span class="n">colores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">select</span><span class="p">([</span><span class="n">con_falt</span><span class="p">[</span><span class="s2">"%"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">70</span><span class="p">,</span> <span class="n">con_falt</span><span class="p">[</span><span class="s2">"%"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">30</span><span class="p">],</span> <span class="p">[</span><span class="s2">"#C44E52"</span><span class="p">,</span> <span class="s2">"#DD8452"</span><span class="p">],</span> <span class="s2">"#4C72B0"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">con_falt</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">con_falt</span><span class="p">[</span><span class="s2">"%"</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colores</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">70</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"</span><span class="si">% d</span><span class="s2">e préstamos sin dato"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Columnas con faltantes (rojo &gt; 70 %, naranja 30-70 %)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">"y"</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"04_faltantes_columnas"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c1df7e46bbefcc9d1c33c3cdc9896aae9fc17a37b8e7b7bf5ca84c2111d573c3.png" src="_images/c1df7e46bbefcc9d1c33c3cdc9896aae9fc17a37b8e7b7bf5ca84c2111d573c3.png" />
+</div>
+</div>
+</section>
+<section id="patron-de-los-faltantes">
+<h2>4.2 Patrón de los faltantes<a class="headerlink" href="#patron-de-los-faltantes" title="Link to this heading">#</a></h2>
+<section id="matriz-de-nulidad">
+<h3>4.2.1 Matriz de nulidad<a class="headerlink" href="#matriz-de-nulidad" title="Link to this heading">#</a></h3>
+<p>La matriz muestra 2.000 préstamos elegidos al azar y <strong>ordenados por fecha de emisión</strong> (de arriba,
+2007, a abajo, 2018), para las columnas con faltantes estrictamente entre 0 % y 100 %, sin las de
+fuga de información ni las de texto libre. Cada franja blanca es un
+dato ausente.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cols_patron</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">falt</span><span class="o">.</span><span class="n">index</span> <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">falt</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="s2">"%"</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">100</span> <span class="ow">and</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">FUGA</span>
+               <span class="ow">and</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"desc"</span><span class="p">,</span> <span class="s2">"emp_title"</span><span class="p">,</span> <span class="s2">"title"</span><span class="p">,</span> <span class="s2">"zip_code"</span><span class="p">)]</span>
+<span class="n">orden_fecha</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"issue_d"</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"%b-%Y"</span><span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">_f</span><span class="o">=</span><span class="n">orden_fecha</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"_f"</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">msno</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="n">cols_patron</span><span class="p">],</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">sparkline</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Matriz de nulidad (2.000 préstamos ordenados por fecha de emisión)"</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">FIGURAS</span> <span class="o">/</span> <span class="s2">"04_msno_matriz.png"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/5fa396ad9cf8b543f603df65c966d5da5b1e46b9bed6d77aaca7b23933a20fd7.png" src="_images/5fa396ad9cf8b543f603df65c966d5da5b1e46b9bed6d77aaca7b23933a20fd7.png" />
+</div>
+</div>
+<p>La matriz muestra que los faltantes <strong>no están dispersos al azar</strong>: forman bloques horizontales.
+Los préstamos más antiguos (parte superior) carecen de todo el bloque de variables del buró de
+crédito que Lending Club empezó a registrar en 2012, y un segundo bloque (<code class="docutils literal notranslate"><span class="pre">open_acc_6m</span></code>,
+<code class="docutils literal notranslate"><span class="pre">il_util</span></code>, <code class="docutils literal notranslate"><span class="pre">all_util</span></code>…) solo aparece en los préstamos recientes (parte inferior).</p>
+</section>
+<section id="faltantes-por-ano-de-emision">
+<h3>4.2.2 Faltantes por año de emisión<a class="headerlink" href="#faltantes-por-ano-de-emision" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seleccion</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"emp_length"</span><span class="p">,</span> <span class="s2">"mths_since_last_delinq"</span><span class="p">,</span> <span class="s2">"mths_since_recent_inq"</span><span class="p">,</span> <span class="s2">"tot_cur_bal"</span><span class="p">,</span>
+             <span class="s2">"avg_cur_bal"</span><span class="p">,</span> <span class="s2">"total_rev_hi_lim"</span><span class="p">,</span> <span class="s2">"num_actv_rev_tl"</span><span class="p">,</span> <span class="s2">"bc_util"</span><span class="p">,</span> <span class="s2">"percent_bc_gt_75"</span><span class="p">,</span>
+             <span class="s2">"mort_acc"</span><span class="p">,</span> <span class="s2">"acc_open_past_24mths"</span><span class="p">,</span> <span class="s2">"open_acc_6m"</span><span class="p">,</span> <span class="s2">"il_util"</span><span class="p">,</span> <span class="s2">"all_util"</span><span class="p">,</span> <span class="s2">"revol_util"</span><span class="p">,</span>
+             <span class="s2">"pub_rec_bankruptcies"</span><span class="p">,</span> <span class="s2">"dti"</span><span class="p">,</span> <span class="s2">"annual_inc_joint"</span><span class="p">,</span> <span class="s2">"sec_app_fico_range_low"</span><span class="p">]</span>
+<span class="n">por_anio</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="n">seleccion</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"issue_year"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">por_anio</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"Reds"</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">".0f"</span><span class="p">,</span> <span class="n">annot_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">"size"</span><span class="p">:</span> <span class="mi">7</span><span class="p">},</span>
+            <span class="n">cbar_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="s2">"</span><span class="si">% f</span><span class="s2">altante"</span><span class="p">},</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Porcentaje de faltantes por año de emisión"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Año de emisión"</span><span class="p">)</span>
+<span class="n">u</span><span class="o">.</span><span class="n">guardar_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">"04_faltantes_anio"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/480470682dfabedd621795d55a459a83ed3c748e62b17049ae77cb60f7776e71.png" src="_images/480470682dfabedd621795d55a459a83ed3c748e62b17049ae77cb60f7776e71.png" />
+</div>
+</div>
+<p>El mapa por año confirma la causa: los faltantes de <code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code>, <code class="docutils literal notranslate"><span class="pre">total_rev_hi_lim</span></code> y demás
+variables del buró son 100 % hasta 2011, 52 % en 2012 y cero desde 2013; los de
+<code class="docutils literal notranslate"><span class="pre">acc_open_past_24mths</span></code> y <code class="docutils literal notranslate"><span class="pre">mort_acc</span></code> también son 100 % hasta 2011, pero solo 14 % en 2012.
+<code class="docutils literal notranslate"><span class="pre">open_acc_6m</span></code>, <code class="docutils literal notranslate"><span class="pre">il_util</span></code> y <code class="docutils literal notranslate"><span class="pre">all_util</span></code> faltan casi por completo hasta 2015 (95 % ese año) y existen
+desde 2016. Son faltantes <strong>estructurales</strong>, determinados por la fecha de emisión y no por el
+prestatario. <code class="docutils literal notranslate"><span class="pre">emp_length</span></code> es distinto: su faltante crece de 0 % en 2007-2009 a cerca de 9 % en
+2018 y depende del solicitante.</p>
+</section>
+<section id="correlacion-de-nulidad-entre-las-variables-candidatas">
+<h3>4.2.3 Correlación de nulidad entre las variables candidatas<a class="headerlink" href="#correlacion-de-nulidad-entre-las-variables-candidatas" title="Link to this heading">#</a></h3>
+<p>El mapa de <code class="docutils literal notranslate"><span class="pre">missingno</span></code> muestra la correlación entre los indicadores de faltante: 1 significa que
+dos variables siempre faltan juntas.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cand</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">NUM_EDA</span> <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">msno</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cand</span><span class="p">],</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"RdBu_r"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Correlación de nulidad entre variables numéricas candidatas"</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">FIGURAS</span> <span class="o">/</span> <span class="s2">"04_msno_heatmap.png"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/9112b1f04476ccd4e891bb1249b8f65fc1dcfd827284db3affe3bc33239f4356.png" src="_images/9112b1f04476ccd4e891bb1249b8f65fc1dcfd827284db3affe3bc33239f4356.png" />
+</div>
+</div>
+<p>Las variables del buró tienen correlaciones de nulidad cercanas a 1 entre sí: faltan juntas,
+porque todas provienen del mismo reporte. <code class="docutils literal notranslate"><span class="pre">emp_length</span></code>, <code class="docutils literal notranslate"><span class="pre">dti</span></code> y <code class="docutils literal notranslate"><span class="pre">mths_since_last_delinq</span></code> tienen
+correlaciones de nulidad casi nulas con el resto: sus faltantes tienen otros mecanismos.</p>
+</section>
+<section id="concentracion-de-faltantes-por-fila">
+<h3>4.2.4 Concentración de faltantes por fila<a class="headerlink" href="#concentracion-de-faltantes-por-fila" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cand_modelo</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">NUM_EDA</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">"mths_since_last_delinq"</span><span class="p">]</span>
+<span class="n">n_falt_fila</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cand_modelo</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">dist_filas</span> <span class="o">=</span> <span class="n">n_falt_fila</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">"préstamos"</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+<span class="n">dist_filas</span><span class="p">[</span><span class="s2">"%"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">dist_filas</span><span class="p">[</span><span class="s2">"préstamos"</span><span class="p">]</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">))</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">dist_filas</span><span class="p">[</span><span class="s2">"tasa_default_%"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">n_falt_fila</span><span class="p">)[</span><span class="s2">"default"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">dist_filas</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>préstamos</th>
+      <th>%</th>
+      <th>tasa_default_%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1073945</td>
+      <td>79.666</td>
+      <td>20.34</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>180855</td>
+      <td>13.416</td>
+      <td>19.19</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>19527</td>
+      <td>1.449</td>
+      <td>22.45</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3089</td>
+      <td>0.229</td>
+      <td>20.72</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>17120</td>
+      <td>1.270</td>
+      <td>17.60</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>3118</td>
+      <td>0.231</td>
+      <td>13.73</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>301</td>
+      <td>0.022</td>
+      <td>21.26</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>67</td>
+      <td>0.005</td>
+      <td>26.87</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>7</td>
+      <td>0.001</td>
+      <td>14.29</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>47226</td>
+      <td>3.503</td>
+      <td>14.82</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>2767</td>
+      <td>0.205</td>
+      <td>23.17</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>8</td>
+      <td>0.001</td>
+      <td>62.50</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>25</td>
+      <td>0.002</td>
+      <td>12.00</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>4</td>
+      <td>0.000</td>
+      <td>0.00</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>El 79,7 % de los préstamos no tiene ningún faltante en las variables candidatas y el 13,4 % tiene
+uno solo (casi siempre <code class="docutils literal notranslate"><span class="pre">mths_since_recent_inq</span></code> o <code class="docutils literal notranslate"><span class="pre">emp_length</span></code>). Los 47.226 préstamos con nueve
+faltantes (3,5 %) son el núcleo de los préstamos antiguos sin bloque de buró; junto con los de
+diez o más suman 50.030, los mismos que carecen de <code class="docutils literal notranslate"><span class="pre">acc_open_past_24mths</span></code> y <code class="docutils literal notranslate"><span class="pre">mort_acc</span></code>. Su tasa de
+default (14,8 %) es menor que la global, como corresponde a las cohortes antiguas (capítulo 1).
+Otros 20.000 préstamos, en las filas de 4 y 5 faltantes, carecen solo de <code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code>,
+<code class="docutils literal notranslate"><span class="pre">total_rev_hi_lim</span></code>, <code class="docutils literal notranslate"><span class="pre">tot_cur_bal</span></code> y <code class="docutils literal notranslate"><span class="pre">num_actv_rev_tl</span></code> (la parte de 2012 sin ese bloque).</p>
+</section>
+</section>
+<section id="dependen-los-faltantes-de-la-variable-objetivo">
+<h2>4.3 ¿Dependen los faltantes de la variable objetivo?<a class="headerlink" href="#dependen-los-faltantes-de-la-variable-objetivo" title="Link to this heading">#</a></h2>
+<p>Para cada variable candidata con faltantes se compara la tasa de default entre los préstamos con
+y sin dato, con una prueba chi-cuadrado de independencia entre el indicador de faltante y
+<code class="docutils literal notranslate"><span class="pre">default</span></code>. Si los faltantes fueran MCAR, la tasa sería la misma en ambos grupos.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filas</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cand</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"emp_title"</span><span class="p">]:</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+    <span class="n">tabla</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">"default"</span><span class="p">])</span>
+    <span class="n">chi2</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">chi2_contingency</span><span class="p">(</span><span class="n">tabla</span><span class="p">)</span>
+    <span class="n">filas</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"variable"</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span> <span class="s2">"%_faltante"</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">ind</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+                  <span class="s2">"default_con_dato_%"</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">ind</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+                  <span class="s2">"default_sin_dato_%"</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">"chi2"</span><span class="p">:</span> <span class="n">chi2</span><span class="p">,</span> <span class="s2">"p"</span><span class="p">:</span> <span class="n">p</span><span class="p">})</span>
+<span class="n">dep</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">filas</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"variable"</span><span class="p">)</span>
+<span class="n">dep</span><span class="p">[</span><span class="s2">"diferencia_pp"</span><span class="p">]</span> <span class="o">=</span> <span class="n">dep</span><span class="p">[</span><span class="s2">"default_sin_dato_%"</span><span class="p">]</span> <span class="o">-</span> <span class="n">dep</span><span class="p">[</span><span class="s2">"default_con_dato_%"</span><span class="p">]</span>
+<span class="n">dep</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"diferencia_pp"</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>%_faltante</th>
+      <th>default_con_dato_%</th>
+      <th>default_sin_dato_%</th>
+      <th>chi2</th>
+      <th>p</th>
+      <th>diferencia_pp</th>
+    </tr>
+    <tr>
+      <th>variable</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>annual_inc</th>
+      <td>0.000</td>
+      <td>19.978</td>
+      <td>0.000</td>
+      <td>0.140</td>
+      <td>0.708</td>
+      <td>-19.978</td>
+    </tr>
+    <tr>
+      <th>inq_last_6mths</th>
+      <td>0.002</td>
+      <td>19.979</td>
+      <td>10.000</td>
+      <td>1.296</td>
+      <td>0.255</td>
+      <td>-9.979</td>
+    </tr>
+    <tr>
+      <th>antig_credito_meses</th>
+      <td>0.002</td>
+      <td>19.979</td>
+      <td>10.345</td>
+      <td>1.135</td>
+      <td>0.287</td>
+      <td>-9.634</td>
+    </tr>
+    <tr>
+      <th>delinq_2yrs</th>
+      <td>0.002</td>
+      <td>19.979</td>
+      <td>10.345</td>
+      <td>1.135</td>
+      <td>0.287</td>
+      <td>-9.634</td>
+    </tr>
+    <tr>
+      <th>open_acc</th>
+      <td>0.002</td>
+      <td>19.979</td>
+      <td>10.345</td>
+      <td>1.135</td>
+      <td>0.287</td>
+      <td>-9.634</td>
+    </tr>
+    <tr>
+      <th>pub_rec</th>
+      <td>0.002</td>
+      <td>19.979</td>
+      <td>10.345</td>
+      <td>1.135</td>
+      <td>0.287</td>
+      <td>-9.634</td>
+    </tr>
+    <tr>
+      <th>total_acc</th>
+      <td>0.002</td>
+      <td>19.979</td>
+      <td>10.345</td>
+      <td>1.135</td>
+      <td>0.287</td>
+      <td>-9.634</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_inq</th>
+      <td>13.117</td>
+      <td>20.718</td>
+      <td>15.078</td>
+      <td>3056.499</td>
+      <td>0.000</td>
+      <td>-5.640</td>
+    </tr>
+    <tr>
+      <th>acc_open_past_24mths</th>
+      <td>3.711</td>
+      <td>20.159</td>
+      <td>15.285</td>
+      <td>715.651</td>
+      <td>0.000</td>
+      <td>-4.874</td>
+    </tr>
+    <tr>
+      <th>mort_acc</th>
+      <td>3.711</td>
+      <td>20.159</td>
+      <td>15.285</td>
+      <td>715.651</td>
+      <td>0.000</td>
+      <td>-4.874</td>
+    </tr>
+    <tr>
+      <th>num_actv_rev_tl</th>
+      <td>5.213</td>
+      <td>20.210</td>
+      <td>15.765</td>
+      <td>823.008</td>
+      <td>0.000</td>
+      <td>-4.445</td>
+    </tr>
+    <tr>
+      <th>tot_cur_bal</th>
+      <td>5.213</td>
+      <td>20.210</td>
+      <td>15.765</td>
+      <td>823.008</td>
+      <td>0.000</td>
+      <td>-4.445</td>
+    </tr>
+    <tr>
+      <th>total_rev_hi_lim</th>
+      <td>5.213</td>
+      <td>20.210</td>
+      <td>15.765</td>
+      <td>823.008</td>
+      <td>0.000</td>
+      <td>-4.445</td>
+    </tr>
+    <tr>
+      <th>avg_cur_bal</th>
+      <td>5.215</td>
+      <td>20.210</td>
+      <td>15.770</td>
+      <td>821.318</td>
+      <td>0.000</td>
+      <td>-4.440</td>
+    </tr>
+    <tr>
+      <th>percent_bc_gt_75</th>
+      <td>4.770</td>
+      <td>20.148</td>
+      <td>16.592</td>
+      <td>484.273</td>
+      <td>0.000</td>
+      <td>-3.557</td>
+    </tr>
+    <tr>
+      <th>bc_util</th>
+      <td>4.797</td>
+      <td>20.147</td>
+      <td>16.638</td>
+      <td>473.943</td>
+      <td>0.000</td>
+      <td>-3.509</td>
+    </tr>
+    <tr>
+      <th>mths_since_last_delinq</th>
+      <td>50.439</td>
+      <td>20.697</td>
+      <td>19.272</td>
+      <td>428.324</td>
+      <td>0.000</td>
+      <td>-1.426</td>
+    </tr>
+    <tr>
+      <th>revol_util</th>
+      <td>0.067</td>
+      <td>19.978</td>
+      <td>20.736</td>
+      <td>0.276</td>
+      <td>0.599</td>
+      <td>0.758</td>
+    </tr>
+    <tr>
+      <th>dti</th>
+      <td>0.067</td>
+      <td>19.976</td>
+      <td>23.542</td>
+      <td>7.006</td>
+      <td>0.008</td>
+      <td>3.566</td>
+    </tr>
+    <tr>
+      <th>pub_rec_bankruptcies</th>
+      <td>0.101</td>
+      <td>19.974</td>
+      <td>24.469</td>
+      <td>16.954</td>
+      <td>0.000</td>
+      <td>4.495</td>
+    </tr>
+    <tr>
+      <th>emp_title</th>
+      <td>6.375</td>
+      <td>19.555</td>
+      <td>26.193</td>
+      <td>2216.966</td>
+      <td>0.000</td>
+      <td>6.637</td>
+    </tr>
+    <tr>
+      <th>emp_length</th>
+      <td>5.827</td>
+      <td>19.549</td>
+      <td>26.921</td>
+      <td>2514.070</td>
+      <td>0.000</td>
+      <td>7.372</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>En cinco grupos de variables la tasa de default difiere entre préstamos con y sin dato, con
+p &lt; 0,01:</p>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">emp_length</span></code></strong>: sin antigüedad laboral declarada, el default sube de 19,5 % a 26,9 %
+(+7,4 puntos). El faltante es informativo, probablemente porque incluye a solicitantes sin
+empleo formal. Se imputa la mediana y se añade el indicador <code class="docutils literal notranslate"><span class="pre">emp_length_faltante</span></code>.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">mths_since_recent_inq</span></code></strong>: sin consultas recientes registradas, el default baja de 20,7 % a
+15,1 %. Se imputa y se añade <code class="docutils literal notranslate"><span class="pre">consulta_faltante</span></code>.</p></li>
+<li><p><strong>Bloque del buró</strong> (<code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code>, <code class="docutils literal notranslate"><span class="pre">total_rev_hi_lim</span></code>, <code class="docutils literal notranslate"><span class="pre">num_actv_rev_tl</span></code>, <code class="docutils literal notranslate"><span class="pre">mort_acc</span></code>,
+<code class="docutils literal notranslate"><span class="pre">acc_open_past_24mths</span></code>): sin dato, el default es 4,4 a 4,9 puntos menor, porque el faltante
+identifica a las cohortes de 2007-2012. Se imputa y se añade un único indicador <code class="docutils literal notranslate"><span class="pre">buro_faltante</span></code>.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">mths_since_last_delinq</span></code></strong>: diferencia de −1,4 puntos; se sustituye por <code class="docutils literal notranslate"><span class="pre">hist_morosidad</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dti</span></code> (p = 0,008) y <code class="docutils literal notranslate"><span class="pre">pub_rec_bankruptcies</span></code> (p &lt; 0,001) difieren en 3,6 y 4,5 puntos, pero
+afectan a menos de 0,11 % de los préstamos; basta con la mediana.</p></li>
+</ul>
+<p>En las variables con 29 faltantes (préstamos sin historial en el buró) la diferencia no es
+significativa (p &gt; 0,25).</p>
+</section>
+<section id="prueba-mcar-de-little">
+<h2>4.4 Prueba MCAR de Little<a class="headerlink" href="#prueba-mcar-de-little" title="Link to this heading">#</a></h2>
+<p>La prueba de Little contrasta <span class="math notranslate nohighlight">\(H_0\)</span>: los datos son MCAR. Compara la media observada de cada
+patrón de faltantes con la media global estimada por máxima verosimilitud (algoritmo EM) y
+suma las discrepancias ponderadas, que bajo <span class="math notranslate nohighlight">\(H_0\)</span> siguen una <span class="math notranslate nohighlight">\(\chi^2\)</span>. Se aplica a todas las
+variables numéricas candidatas con faltantes (excepto <code class="docutils literal notranslate"><span class="pre">mths_since_last_delinq</span></code>, cuyo faltante
+tiene un significado conocido) y a <code class="docutils literal notranslate"><span class="pre">default</span></code>, con los 1.348.059 préstamos. Como verificación de
+sensibilidad se repite sobre una muestra de 5.000 préstamos: con un millón de observaciones la
+prueba detecta desviaciones mínimas.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vars_little</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cand</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">"mths_since_last_delinq"</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"default"</span><span class="p">]</span>
+<span class="n">res_total</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">little_mcar</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">vars_little</span><span class="p">])</span>
+<span class="n">res_muestra</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">little_mcar</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">vars_little</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">SEMILLA</span><span class="p">))</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"completo (n = 1.348.059)"</span><span class="p">:</span> <span class="n">res_total</span><span class="p">,</span> <span class="s2">"muestra (n = 5.000)"</span><span class="p">:</span> <span class="n">res_muestra</span><span class="p">})</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>d2</th>
+      <th>gl</th>
+      <th>p_valor</th>
+      <th>patrones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>completo (n = 1.348.059)</th>
+      <td>316617.791665</td>
+      <td>881.0</td>
+      <td>0.000000e+00</td>
+      <td>56.0</td>
+    </tr>
+    <tr>
+      <th>muestra (n = 5.000)</th>
+      <td>1648.388747</td>
+      <td>325.0</td>
+      <td>1.275182e-175</td>
+      <td>20.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>La prueba de Little rechaza MCAR con los datos completos (<span class="math notranslate nohighlight">\(d^2\)</span> = 316.618 con 881 grados de
+libertad, 56 patrones de faltantes) y también en la muestra de 5.000 préstamos (p ≈ 10⁻¹⁷⁵), así
+que el rechazo no se debe solo al tamaño de muestra. Los faltantes son, como mínimo, MAR: dependen
+de variables observadas (el año de emisión) y, en el caso de <code class="docutils literal notranslate"><span class="pre">emp_length</span></code>, se asocian con el
+desenlace. Dos consecuencias para el preprocesamiento:</p>
+<ol class="arabic simple">
+<li><p>Eliminar las filas con faltantes (análisis de casos completos) no es válido: sesgaría la
+muestra hacia los préstamos posteriores a 2012 y descartaría 20 % de los datos, en contra de
+la condición de usar el conjunto completo.</p></li>
+<li><p>Los indicadores de faltante conservan la información que la imputación por mediana borraría.
+La mediana se calcula solo con el conjunto de entrenamiento.</p></li>
+</ol>
+</section>
+<section id="plan-de-tratamiento-por-variable">
+<h2>4.5 Plan de tratamiento por variable<a class="headerlink" href="#plan-de-tratamiento-por-variable" title="Link to this heading">#</a></h2>
+<p>La tabla asigna a cada una de las 154 columnas una decisión según estos criterios, en este orden:
+(1) decisiones explícitas (identificadores, texto libre, constantes y redundancias de los
+capítulos 2 y 3); (2) información posterior a la originación → eliminar por fuga; (3) más de 70 %
+de faltantes → eliminar; (4) variables elegidas para el modelo, tratadas según su tipo; (5) entre
+30 % y 70 % de faltantes por estar disponibles solo desde 2015-2016 → eliminar; (6) el resto no se
+selecciona por redundante o poco informativo.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plan_manual</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"identificador: se conserva solo para la partición común"</span><span class="p">,</span>
+    <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"variable objetivo"</span><span class="p">,</span>
+    <span class="s2">"loan_status"</span><span class="p">:</span> <span class="s2">"origen de la variable objetivo: eliminar"</span><span class="p">,</span>
+    <span class="s2">"member_id"</span><span class="p">:</span> <span class="s2">"vacía: eliminar"</span><span class="p">,</span> <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"identificador: eliminar"</span><span class="p">,</span> <span class="s2">"desc"</span><span class="p">:</span> <span class="s2">"texto libre: eliminar"</span><span class="p">,</span>
+    <span class="s2">"title"</span><span class="p">:</span> <span class="s2">"texto libre (duplica purpose): eliminar"</span><span class="p">,</span> <span class="s2">"emp_title"</span><span class="p">:</span> <span class="s2">"texto libre, 380 mil valores: eliminar"</span><span class="p">,</span>
+    <span class="s2">"zip_code"</span><span class="p">:</span> <span class="s2">"3 dígitos, redundante con addr_state: eliminar"</span><span class="p">,</span>
+    <span class="s2">"policy_code"</span><span class="p">:</span> <span class="s2">"constante: eliminar"</span><span class="p">,</span> <span class="s2">"issue_d"</span><span class="p">:</span> <span class="s2">"fecha de emisión: solo descriptiva"</span><span class="p">,</span>
+    <span class="s2">"issue_year"</span><span class="p">:</span> <span class="s2">"solo descriptiva"</span><span class="p">,</span> <span class="s2">"earliest_cr_line"</span><span class="p">:</span> <span class="s2">"reemplazada por antig_credito_meses"</span><span class="p">,</span>
+    <span class="s2">"mths_since_last_delinq"</span><span class="p">:</span> <span class="s2">"50 </span><span class="si">% f</span><span class="s2">altante informativo: indicador hist_morosidad"</span><span class="p">,</span>
+    <span class="s2">"emp_length"</span><span class="p">:</span> <span class="s2">"imputar mediana de entrenamiento + indicador emp_length_faltante"</span><span class="p">,</span>
+    <span class="s2">"mths_since_recent_inq"</span><span class="p">:</span> <span class="s2">"imputar mediana de entrenamiento + indicador consulta_faltante"</span><span class="p">,</span>
+    <span class="s2">"avg_cur_bal"</span><span class="p">:</span> <span class="s2">"imputar mediana + log1p; indicador buro_faltante (bloque de buró anterior a 2012)"</span><span class="p">,</span>
+    <span class="s2">"dti"</span><span class="p">:</span> <span class="s2">"fuera de [0, 100] a faltante; imputar mediana"</span><span class="p">,</span>
+    <span class="s2">"installment"</span><span class="p">:</span> <span class="s2">"redundante con loan_amnt, int_rate y term: eliminar"</span><span class="p">,</span>
+    <span class="s2">"fico_range_low"</span><span class="p">:</span> <span class="s2">"redundante con fico_range_high (r = 1): eliminar"</span><span class="p">,</span>
+    <span class="s2">"grade"</span><span class="p">:</span> <span class="s2">"redundante con int_rate: eliminar"</span><span class="p">,</span> <span class="s2">"sub_grade"</span><span class="p">:</span> <span class="s2">"redundante con int_rate: eliminar"</span><span class="p">,</span>
+    <span class="s2">"funded_amnt"</span><span class="p">:</span> <span class="s2">"casi idéntica a loan_amnt y posterior a la solicitud: eliminar"</span><span class="p">,</span>
+    <span class="s2">"bc_util"</span><span class="p">:</span> <span class="s2">"redundante con revol_util (r = 0,86): eliminar"</span><span class="p">,</span>
+    <span class="s2">"percent_bc_gt_75"</span><span class="p">:</span> <span class="s2">"redundante con revol_util y bc_util (r &gt; 0,72): eliminar"</span><span class="p">,</span>
+    <span class="s2">"tot_cur_bal"</span><span class="p">:</span> <span class="s2">"redundante con avg_cur_bal (r = 0,84): eliminar"</span><span class="p">,</span>
+    <span class="s2">"revol_bal"</span><span class="p">:</span> <span class="s2">"redundante con total_rev_hi_lim (r = 0,81): eliminar"</span><span class="p">,</span>
+    <span class="s2">"total_acc"</span><span class="p">:</span> <span class="s2">"redundante con open_acc (r = 0,70): eliminar"</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">modelo_num</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"loan_amnt"</span><span class="p">,</span> <span class="s2">"term"</span><span class="p">,</span> <span class="s2">"int_rate"</span><span class="p">,</span> <span class="s2">"emp_length"</span><span class="p">,</span> <span class="s2">"annual_inc"</span><span class="p">,</span> <span class="s2">"dti"</span><span class="p">,</span> <span class="s2">"fico_range_high"</span><span class="p">,</span>
+              <span class="s2">"delinq_2yrs"</span><span class="p">,</span> <span class="s2">"inq_last_6mths"</span><span class="p">,</span> <span class="s2">"open_acc"</span><span class="p">,</span> <span class="s2">"pub_rec"</span><span class="p">,</span> <span class="s2">"revol_util"</span><span class="p">,</span> <span class="s2">"mort_acc"</span><span class="p">,</span>
+              <span class="s2">"pub_rec_bankruptcies"</span><span class="p">,</span> <span class="s2">"acc_open_past_24mths"</span><span class="p">,</span> <span class="s2">"num_actv_rev_tl"</span><span class="p">,</span> <span class="s2">"total_rev_hi_lim"</span><span class="p">,</span>
+              <span class="s2">"avg_cur_bal"</span><span class="p">,</span> <span class="s2">"mths_since_recent_inq"</span><span class="p">,</span> <span class="s2">"antig_credito_meses"</span><span class="p">]</span>
+<span class="n">modelo_cat</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"purpose"</span><span class="p">,</span> <span class="s2">"home_ownership"</span><span class="p">,</span> <span class="s2">"addr_state"</span><span class="p">,</span> <span class="s2">"verification_status"</span><span class="p">,</span> <span class="s2">"application_type"</span><span class="p">,</span>
+              <span class="s2">"initial_list_status"</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">decision</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">plan_manual</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">plan_manual</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">FUGA</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"posterior a la originación (fuga): eliminar"</span>
+    <span class="k">if</span> <span class="n">falt</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="s2">"%"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">70</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"&gt; 70 </span><span class="si">% f</span><span class="s2">altante: eliminar"</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">modelo_cat</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"categórica: agrupar &lt; 1 % y codificar one-hot"</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">modelo_num</span><span class="p">:</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="s2">" + log1p"</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"annual_inc"</span><span class="p">,</span> <span class="s2">"total_rev_hi_lim"</span><span class="p">,</span> <span class="s2">"avg_cur_bal"</span><span class="p">]</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">"imputar mediana de entrenamiento"</span> <span class="k">if</span> <span class="n">falt</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="s2">"%"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">"sin faltantes"</span><span class="p">)</span> <span class="o">+</span> <span class="n">log</span>
+    <span class="k">if</span> <span class="n">falt</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="s2">"%"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">30</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"30-70 </span><span class="si">% f</span><span class="s2">altante, disponible solo desde 2015-2016: eliminar"</span>
+    <span class="k">return</span> <span class="s2">"no seleccionada (redundante o poco informativa según el EDA)"</span>
+
+
+<span class="n">plan</span> <span class="o">=</span> <span class="n">falt</span><span class="p">[[</span><span class="s2">"%"</span><span class="p">]]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">decision</span><span class="o">=</span><span class="p">[</span><span class="n">decision</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">falt</span><span class="o">.</span><span class="n">index</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">plan</span><span class="p">[</span><span class="s2">"decision"</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
+<span class="n">plan</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>decision
+eliminar                                                                             91
+no seleccionada (redundante o poco informativa según el EDA)                         31
+imputar mediana de entrenamiento                                                     10
+agrupar &lt; 1 % y codificar one-hot                                                     6
+sin faltantes                                                                         4
+imputar mediana de entrenamiento + log1p                                              2
+solo descriptiva                                                                      2
+se conserva solo para la partición común                                              1
+imputar mediana de entrenamiento + indicador emp_length_faltante                      1
+fuera de [0, 100] a faltante; imputar mediana                                         1
+reemplazada por antig_credito_meses                                                   1
+indicador hist_morosidad                                                              1
+imputar mediana + log1p; indicador buro_faltante (bloque de buró anterior a 2012)     1
+imputar mediana de entrenamiento + indicador consulta_faltante                        1
+variable objetivo                                                                     1
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>%</th>
+      <th>decision</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>id</th>
+      <td>0.00</td>
+      <td>identificador: se conserva solo para la partic...</td>
+    </tr>
+    <tr>
+      <th>member_id</th>
+      <td>100.00</td>
+      <td>vacía: eliminar</td>
+    </tr>
+    <tr>
+      <th>loan_amnt</th>
+      <td>0.00</td>
+      <td>sin faltantes</td>
+    </tr>
+    <tr>
+      <th>funded_amnt</th>
+      <td>0.00</td>
+      <td>casi idéntica a loan_amnt y posterior a la sol...</td>
+    </tr>
+    <tr>
+      <th>funded_amnt_inv</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>term</th>
+      <td>0.00</td>
+      <td>sin faltantes</td>
+    </tr>
+    <tr>
+      <th>int_rate</th>
+      <td>0.00</td>
+      <td>sin faltantes</td>
+    </tr>
+    <tr>
+      <th>installment</th>
+      <td>0.00</td>
+      <td>redundante con loan_amnt, int_rate y term: eli...</td>
+    </tr>
+    <tr>
+      <th>grade</th>
+      <td>0.00</td>
+      <td>redundante con int_rate: eliminar</td>
+    </tr>
+    <tr>
+      <th>sub_grade</th>
+      <td>0.00</td>
+      <td>redundante con int_rate: eliminar</td>
+    </tr>
+    <tr>
+      <th>emp_title</th>
+      <td>6.38</td>
+      <td>texto libre, 380 mil valores: eliminar</td>
+    </tr>
+    <tr>
+      <th>emp_length</th>
+      <td>5.83</td>
+      <td>imputar mediana de entrenamiento + indicador e...</td>
+    </tr>
+    <tr>
+      <th>home_ownership</th>
+      <td>0.00</td>
+      <td>categórica: agrupar &lt; 1 % y codificar one-hot</td>
+    </tr>
+    <tr>
+      <th>annual_inc</th>
+      <td>0.00</td>
+      <td>imputar mediana de entrenamiento + log1p</td>
+    </tr>
+    <tr>
+      <th>verification_status</th>
+      <td>0.00</td>
+      <td>categórica: agrupar &lt; 1 % y codificar one-hot</td>
+    </tr>
+    <tr>
+      <th>issue_d</th>
+      <td>0.00</td>
+      <td>fecha de emisión: solo descriptiva</td>
+    </tr>
+    <tr>
+      <th>loan_status</th>
+      <td>0.00</td>
+      <td>origen de la variable objetivo: eliminar</td>
+    </tr>
+    <tr>
+      <th>pymnt_plan</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>url</th>
+      <td>0.00</td>
+      <td>identificador: eliminar</td>
+    </tr>
+    <tr>
+      <th>desc</th>
+      <td>90.66</td>
+      <td>texto libre: eliminar</td>
+    </tr>
+    <tr>
+      <th>purpose</th>
+      <td>0.00</td>
+      <td>categórica: agrupar &lt; 1 % y codificar one-hot</td>
+    </tr>
+    <tr>
+      <th>title</th>
+      <td>1.24</td>
+      <td>texto libre (duplica purpose): eliminar</td>
+    </tr>
+    <tr>
+      <th>zip_code</th>
+      <td>0.00</td>
+      <td>3 dígitos, redundante con addr_state: eliminar</td>
+    </tr>
+    <tr>
+      <th>addr_state</th>
+      <td>0.00</td>
+      <td>categórica: agrupar &lt; 1 % y codificar one-hot</td>
+    </tr>
+    <tr>
+      <th>dti</th>
+      <td>0.07</td>
+      <td>fuera de [0, 100] a faltante; imputar mediana</td>
+    </tr>
+    <tr>
+      <th>delinq_2yrs</th>
+      <td>0.00</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>earliest_cr_line</th>
+      <td>0.00</td>
+      <td>reemplazada por antig_credito_meses</td>
+    </tr>
+    <tr>
+      <th>fico_range_low</th>
+      <td>0.00</td>
+      <td>redundante con fico_range_high (r = 1): eliminar</td>
+    </tr>
+    <tr>
+      <th>fico_range_high</th>
+      <td>0.00</td>
+      <td>sin faltantes</td>
+    </tr>
+    <tr>
+      <th>inq_last_6mths</th>
+      <td>0.00</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>mths_since_last_delinq</th>
+      <td>50.44</td>
+      <td>50 % faltante informativo: indicador hist_moro...</td>
+    </tr>
+    <tr>
+      <th>mths_since_last_record</th>
+      <td>82.98</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>open_acc</th>
+      <td>0.00</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>pub_rec</th>
+      <td>0.00</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>revol_bal</th>
+      <td>0.00</td>
+      <td>redundante con total_rev_hi_lim (r = 0,81): el...</td>
+    </tr>
+    <tr>
+      <th>revol_util</th>
+      <td>0.07</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>total_acc</th>
+      <td>0.00</td>
+      <td>redundante con open_acc (r = 0,70): eliminar</td>
+    </tr>
+    <tr>
+      <th>initial_list_status</th>
+      <td>0.00</td>
+      <td>categórica: agrupar &lt; 1 % y codificar one-hot</td>
+    </tr>
+    <tr>
+      <th>out_prncp</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>out_prncp_inv</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>total_pymnt</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>total_pymnt_inv</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>total_rec_prncp</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>total_rec_int</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>total_rec_late_fee</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>recoveries</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>collection_recovery_fee</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>last_pymnt_d</th>
+      <td>0.17</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>last_pymnt_amnt</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>next_pymnt_d</th>
+      <td>99.80</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>last_credit_pull_d</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>last_fico_range_high</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>last_fico_range_low</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>collections_12_mths_ex_med</th>
+      <td>0.01</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>mths_since_last_major_derog</th>
+      <td>73.76</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>policy_code</th>
+      <td>0.00</td>
+      <td>constante: eliminar</td>
+    </tr>
+    <tr>
+      <th>application_type</th>
+      <td>0.00</td>
+      <td>categórica: agrupar &lt; 1 % y codificar one-hot</td>
+    </tr>
+    <tr>
+      <th>annual_inc_joint</th>
+      <td>98.09</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>dti_joint</th>
+      <td>98.09</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>verification_status_joint</th>
+      <td>98.10</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>acc_now_delinq</th>
+      <td>0.00</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>tot_coll_amt</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>tot_cur_bal</th>
+      <td>5.21</td>
+      <td>redundante con avg_cur_bal (r = 0,84): eliminar</td>
+    </tr>
+    <tr>
+      <th>open_acc_6m</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>open_act_il</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>open_il_12m</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>open_il_24m</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>mths_since_rcnt_il</th>
+      <td>61.18</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>total_bal_il</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>il_util</th>
+      <td>65.50</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>open_rv_12m</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>open_rv_24m</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>max_bal_bc</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>all_util</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>total_rev_hi_lim</th>
+      <td>5.21</td>
+      <td>imputar mediana de entrenamiento + log1p</td>
+    </tr>
+    <tr>
+      <th>inq_fi</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>total_cu_tl</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>inq_last_12m</th>
+      <td>60.12</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>acc_open_past_24mths</th>
+      <td>3.71</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>avg_cur_bal</th>
+      <td>5.21</td>
+      <td>imputar mediana + log1p; indicador buro_faltan...</td>
+    </tr>
+    <tr>
+      <th>bc_open_to_buy</th>
+      <td>4.74</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>bc_util</th>
+      <td>4.80</td>
+      <td>redundante con revol_util (r = 0,86): eliminar</td>
+    </tr>
+    <tr>
+      <th>chargeoff_within_12_mths</th>
+      <td>0.01</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>delinq_amnt</th>
+      <td>0.00</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>mo_sin_old_il_acct</th>
+      <td>8.04</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>mo_sin_old_rev_tl_op</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>mo_sin_rcnt_rev_tl_op</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>mo_sin_rcnt_tl</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>mort_acc</th>
+      <td>3.71</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_bc</th>
+      <td>4.67</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_bc_dlq</th>
+      <td>76.33</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_inq</th>
+      <td>13.12</td>
+      <td>imputar mediana de entrenamiento + indicador c...</td>
+    </tr>
+    <tr>
+      <th>mths_since_recent_revol_delinq</th>
+      <td>66.62</td>
+      <td>30-70 % faltante, disponible solo desde 2015-2...</td>
+    </tr>
+    <tr>
+      <th>num_accts_ever_120_pd</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_actv_bc_tl</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_actv_rev_tl</th>
+      <td>5.21</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>num_bc_sats</th>
+      <td>4.35</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_bc_tl</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_il_tl</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_op_rev_tl</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_rev_accts</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_rev_tl_bal_gt_0</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_sats</th>
+      <td>4.35</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_tl_120dpd_2m</th>
+      <td>8.91</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_tl_30dpd</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_tl_90g_dpd_24m</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>num_tl_op_past_12m</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>pct_tl_nvr_dlq</th>
+      <td>5.22</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>percent_bc_gt_75</th>
+      <td>4.77</td>
+      <td>redundante con revol_util y bc_util (r &gt; 0,72)...</td>
+    </tr>
+    <tr>
+      <th>pub_rec_bankruptcies</th>
+      <td>0.10</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>tax_liens</th>
+      <td>0.01</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>tot_hi_cred_lim</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>total_bal_ex_mort</th>
+      <td>3.71</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>total_bc_limit</th>
+      <td>3.71</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>total_il_high_credit_limit</th>
+      <td>5.21</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>revol_bal_joint</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_fico_range_low</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_fico_range_high</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_earliest_cr_line</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_inq_last_6mths</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_mort_acc</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_open_acc</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_revol_util</th>
+      <td>98.64</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_open_act_il</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_num_rev_accts</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_chargeoff_within_12_mths</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_collections_12_mths_ex_med</th>
+      <td>98.62</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>sec_app_mths_since_last_major_derog</th>
+      <td>99.51</td>
+      <td>&gt; 70 % faltante: eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_flag</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_type</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_reason</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_status</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>deferral_term</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_amount</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_start_date</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_end_date</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>payment_plan_start_date</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_length</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_dpd</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_loan_status</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>orig_projected_additional_accrued_interest</th>
+      <td>99.72</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_payoff_balance_amount</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>hardship_last_payment_amount</th>
+      <td>99.57</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>disbursement_method</th>
+      <td>0.00</td>
+      <td>no seleccionada (redundante o poco informativa...</td>
+    </tr>
+    <tr>
+      <th>debt_settlement_flag</th>
+      <td>0.00</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>debt_settlement_flag_date</th>
+      <td>97.53</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>settlement_status</th>
+      <td>97.53</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>settlement_date</th>
+      <td>97.53</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>settlement_amount</th>
+      <td>97.53</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>settlement_percentage</th>
+      <td>97.53</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>settlement_term</th>
+      <td>97.53</td>
+      <td>posterior a la originación (fuga): eliminar</td>
+    </tr>
+    <tr>
+      <th>default</th>
+      <td>0.00</td>
+      <td>variable objetivo</td>
+    </tr>
+    <tr>
+      <th>antig_credito_meses</th>
+      <td>0.00</td>
+      <td>imputar mediana de entrenamiento</td>
+    </tr>
+    <tr>
+      <th>issue_year</th>
+      <td>0.00</td>
+      <td>solo descriptiva</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>De las 154 columnas se eliminan 91 (fuga de información, identificadores, texto libre, variables
+constantes, redundantes, con más de 70 % de faltantes o con 30-70 % de faltantes por estar
+disponibles solo desde 2015-2016) y otras 31 no se seleccionan por ser redundantes o poco
+informativas según el EDA. El modelo usa 20 variables
+numéricas originales, 4 indicadores binarios y 6 categóricas.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">u</span><span class="o">.</span><span class="n">guardar_json</span><span class="p">({</span><span class="s2">"numericas"</span><span class="p">:</span> <span class="n">modelo_num</span><span class="p">,</span> <span class="s2">"categoricas"</span><span class="p">:</span> <span class="n">modelo_cat</span><span class="p">,</span>
+                <span class="s2">"log1p"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"annual_inc"</span><span class="p">,</span> <span class="s2">"total_rev_hi_lim"</span><span class="p">,</span> <span class="s2">"avg_cur_bal"</span><span class="p">],</span>
+                <span class="s2">"indicadores"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"hist_morosidad"</span><span class="p">,</span> <span class="s2">"emp_length_faltante"</span><span class="p">,</span> <span class="s2">"consulta_faltante"</span><span class="p">,</span>
+                                <span class="s2">"buro_faltante"</span><span class="p">]},</span> <span class="n">u</span><span class="o">.</span><span class="n">PROCESSED</span> <span class="o">/</span> <span class="s2">"variables_modelo.json"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "ml-lending"
+        },
+        kernelOptions: {
+            name: "ml-lending",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'ml-lending'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="03_eda_bivariado.html"
+       title="página anterior">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">anterior</p>
+        <p class="prev-next-title">3. Análisis bidimensional</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="04b_resumen_eda.html"
+       title="siguiente página">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">siguiente</p>
+        <p class="prev-next-title">Resumen ejecutivo del EDA</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contenido
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#faltantes-por-columna">4.1 Faltantes por columna</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#patron-de-los-faltantes">4.2 Patrón de los faltantes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#matriz-de-nulidad">4.2.1 Matriz de nulidad</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#faltantes-por-ano-de-emision">4.2.2 Faltantes por año de emisión</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#correlacion-de-nulidad-entre-las-variables-candidatas">4.2.3 Correlación de nulidad entre las variables candidatas</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#concentracion-de-faltantes-por-fila">4.2.4 Concentración de faltantes por fila</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dependen-los-faltantes-de-la-variable-objetivo">4.3 ¿Dependen los faltantes de la variable objetivo?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prueba-mcar-de-little">4.4 Prueba MCAR de Little</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-de-tratamiento-por-variable">4.5 Plan de tratamiento por variable</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+Por Camilo Molina Guerrero
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

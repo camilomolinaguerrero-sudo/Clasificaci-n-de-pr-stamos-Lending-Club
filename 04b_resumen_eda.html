@@ -1,0 +1,677 @@
+
+<!DOCTYPE html>
+
+
+<html lang="es" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Resumen ejecutivo del EDA &#8212; Default en préstamos de Lending Club: scikit-learn frente a PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="_static/documentation_options.js?v=78d55cf8"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Haz clic para mostrar';</script>
+    <script>let toggleHintHide = 'Haz clic para ocultar';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/translations.js?v=d190bf04"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '04b_resumen_eda';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="next" title="5. Preprocesamiento" href="05_preprocesamiento.html" />
+    <link rel="prev" title="4. Valores faltantes" href="04_valores_faltantes.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="es"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Saltar al contenido principal</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Volver arriba</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Advertencia de versión"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Navegación del sitio">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="En esta página">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Default en préstamos de Lending Club: scikit-learn frente a PySpark</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Búsqueda</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Default en préstamos de Lending Club: scikit-learn frente a PySpark
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Análisis exploratorio</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_carga_vision_general.html">1. Carga inicial y visión general</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_eda_univariado.html">2. Análisis unidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_eda_bivariado.html">3. Análisis bidimensional</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_valores_faltantes.html">4. Valores faltantes</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Resumen ejecutivo del EDA</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocesamiento y modelado</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="05_preprocesamiento.html">5. Preprocesamiento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_modelado_sklearn.html">6. Modelado con scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_modelado_pyspark.html">7. Modelado con PySpark</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Evaluación y comparación</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="08_comparacion_estadistica.html">8. Comparación estadística de los modelos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_lime.html">9. Interpretabilidad con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_comparacion_resultados.html">10. Comparación de resultados</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_experimentos.html">11. Experimentos complementarios</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Discusión</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="12_reflexion_critica.html">12. Reflexión crítica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_referencias.html">Referencias</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/camilomolinaguerrero-sudo/Clasificaci-n-de-pr-stamos-Lending-Club" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Repositorio de origen"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Descarga esta pagina">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/04b_resumen_eda.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Descargar archivo fuente"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Imprimir en PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Modo de pantalla completa"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Tema" data-bs-title="Tema"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Claro"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Oscuro"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="Sistema"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Búsqueda" aria-label="Búsqueda" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Resumen ejecutivo del EDA</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contenido </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calidad-de-los-datos">Calidad de los datos</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variables-mas-prometedoras">Variables más prometedoras</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problemas-detectados">Problemas detectados</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decisiones-para-el-preprocesamiento">Decisiones para el preprocesamiento</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="resumen-ejecutivo-del-eda">
+<h1>Resumen ejecutivo del EDA<a class="headerlink" href="#resumen-ejecutivo-del-eda" title="Link to this heading">#</a></h1>
+<p>Esta sección sintetiza los capítulos 1 a 4 (sección 9.10.4.1.5 del enunciado) y fija las decisiones
+que guían el preprocesamiento.</p>
+<section id="calidad-de-los-datos">
+<h2>Calidad de los datos<a class="headerlink" href="#calidad-de-los-datos" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspecto</p></th>
+<th class="head"><p>Hallazgo</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Tamaño</p></td>
+<td><p>2.260.701 filas y 151 columnas en el CSV; 33 filas de totales o sin <code class="docutils literal notranslate"><span class="pre">loan_status</span></code> (dos de ellas al final del archivo) que no son préstamos.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Población</p></td>
+<td><p>1.348.059 préstamos cerrados (Fully Paid o Charged Off, incluidos los 2.749 <em>Does not meet the credit policy</em>). Los 912.609 préstamos vigentes al corte se excluyen porque su desenlace no se conoce.</p></td>
+</tr>
+<tr class="row-even"><td><p>Fuga de información</p></td>
+<td><p>40 columnas solo existen después de la originación (pagos, recuperaciones, último pago, FICO reciente, <em>hardship</em>, <em>settlement</em>) y no pueden usarse.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Faltantes</p></td>
+<td><p>42 columnas superan 70 % de faltantes; un bloque de unas 20 variables del buró falta en todos los préstamos de 2007-2011 y en el 52 % de los de 2012 (faltante estructural por fecha); la prueba de Little rechaza MCAR (p ≈ 10⁻¹⁷⁵ incluso con una muestra de 5.000 préstamos).</p></td>
+</tr>
+<tr class="row-even"><td><p>Valores inválidos</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">dti</span></code> &lt; 0 o &gt; 100 (535 casos, con un máximo de 999) se tratan como faltantes.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Atípicos</p></td>
+<td><p>Ingresos y saldos con colas muy largas (asimetría de hasta 52); son prestatarios reales, no errores, y se tratan con log(1 + x), no eliminándolos.</p></td>
+</tr>
+<tr class="row-even"><td><p>Sesgo de cohorte</p></td>
+<td><p>Solo se observan los préstamos ya cerrados: las cohortes de 2016-2017 tienen más default (23 %) y la de 2018 menos (15,8 %) por la censura del desenlace.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="variables-mas-prometedoras">
+<h2>Variables más prometedoras<a class="headerlink" href="#variables-mas-prometedoras" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Variable</p></th>
+<th class="head"><p>Evidencia</p></th>
+<th class="head"><p>Dirección</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">int_rate</span></code></p></td>
+<td><p>AUC univariado 0,683; r punto-biserial 0,26</p></td>
+<td><p>más tasa, más default</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">term</span></code></p></td>
+<td><p>AUC 0,594; 39 % de los defaults a 60 meses frente a 20 % de los pagados</p></td>
+<td><p>plazo largo, más default</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fico_range_high</span></code></p></td>
+<td><p>AUC 0,407 (0,593 invertido)</p></td>
+<td><p>más FICO, menos default</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dti</span></code></p></td>
+<td><p>AUC 0,577</p></td>
+<td><p>más endeudamiento, más default</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">acc_open_past_24mths</span></code></p></td>
+<td><p>AUC 0,571</p></td>
+<td><p>más cuentas recientes, más default</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code>, <code class="docutils literal notranslate"><span class="pre">mort_acc</span></code>, <code class="docutils literal notranslate"><span class="pre">annual_inc</span></code></p></td>
+<td><p>AUC 0,44-0,45</p></td>
+<td><p>más patrimonio, menos default</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">grade</span></code></p></td>
+<td><p>V de Cramér 0,26; default de 6,0 % (A) a 49,7 % (G)</p></td>
+<td><p>redundante con <code class="docutils literal notranslate"><span class="pre">int_rate</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">verification_status</span></code>, <code class="docutils literal notranslate"><span class="pre">home_ownership</span></code>, <code class="docutils literal notranslate"><span class="pre">purpose</span></code>, <code class="docutils literal notranslate"><span class="pre">addr_state</span></code></p></td>
+<td><p>V de Cramér entre 0,05 y 0,09</p></td>
+<td><p>asociación débil</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">emp_length</span></code> faltante</p></td>
+<td><p>default de 26,9 % frente a 19,5 % con dato</p></td>
+<td><p>faltante informativo</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="problemas-detectados">
+<h2>Problemas detectados<a class="headerlink" href="#problemas-detectados" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Desbalance moderado</strong>: 19,98 % de defaults (4 pagados por cada default). La exactitud es
+engañosa y, con 20 % de defaults, es de esperar que el umbral de 0,5 deje casi todos los
+préstamos como «pagados» (se confirma en los capítulos 6 y 7).</p></li>
+<li><p><strong>Multicolinealidad</strong>: ocho pares con |r| &gt; 0,7, todos con explicación contable (FICO bajo y
+alto, monto y cuota, utilizaciones, saldos y límites); <code class="docutils literal notranslate"><span class="pre">grade</span></code> explica el 90,7 % de la varianza
+de <code class="docutils literal notranslate"><span class="pre">int_rate</span></code>.</p></li>
+<li><p><strong>Faltantes sistemáticos</strong>: dependen del año de emisión (MAR) y, en <code class="docutils literal notranslate"><span class="pre">emp_length</span></code> y
+<code class="docutils literal notranslate"><span class="pre">mths_since_recent_inq</span></code>, se asocian con el desenlace.</p></li>
+<li><p><strong>Poder discriminante individual moderado</strong>: ninguna variable separa las clases; el mejor AUC
+univariado es 0,68. Se espera un AUC multivariado moderado, del orden de 0,70.</p></li>
+</ol>
+</section>
+<section id="decisiones-para-el-preprocesamiento">
+<h2>Decisiones para el preprocesamiento<a class="headerlink" href="#decisiones-para-el-preprocesamiento" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Decisión</p></th>
+<th class="head"><p>Detalle</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Variables</p></td>
+<td><p>20 numéricas, 4 indicadores binarios y 6 categóricas (lista en el capítulo 4, sección 4.5)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Eliminadas</p></td>
+<td><p>fuga de información, identificadores y texto libre, columnas con más de 70 % de faltantes, variables disponibles solo desde 2015, y <code class="docutils literal notranslate"><span class="pre">installment</span></code>, <code class="docutils literal notranslate"><span class="pre">fico_range_low</span></code>, <code class="docutils literal notranslate"><span class="pre">grade</span></code>, <code class="docutils literal notranslate"><span class="pre">sub_grade</span></code>, <code class="docutils literal notranslate"><span class="pre">bc_util</span></code>, <code class="docutils literal notranslate"><span class="pre">percent_bc_gt_75</span></code>, <code class="docutils literal notranslate"><span class="pre">tot_cur_bal</span></code>, <code class="docutils literal notranslate"><span class="pre">revol_bal</span></code> y <code class="docutils literal notranslate"><span class="pre">total_acc</span></code> por redundancia; además, otras 31 columnas del buró y de la solicitud (<code class="docutils literal notranslate"><span class="pre">num_*</span></code>, <code class="docutils literal notranslate"><span class="pre">mo_sin_*</span></code>, <code class="docutils literal notranslate"><span class="pre">tot_hi_cred_lim</span></code>, <code class="docutils literal notranslate"><span class="pre">bc_open_to_buy</span></code>…) no se seleccionan por redundantes o poco informativas</p></td>
+</tr>
+<tr class="row-even"><td><p>Transformaciones</p></td>
+<td><p>log(1 + x) en <code class="docutils literal notranslate"><span class="pre">annual_inc</span></code>, <code class="docutils literal notranslate"><span class="pre">total_rev_hi_lim</span></code> y <code class="docutils literal notranslate"><span class="pre">avg_cur_bal</span></code>; estandarización del bloque numérico</p></td>
+</tr>
+<tr class="row-odd"><td><p>Faltantes</p></td>
+<td><p>mediana de entrenamiento; indicadores <code class="docutils literal notranslate"><span class="pre">hist_morosidad</span></code>, <code class="docutils literal notranslate"><span class="pre">emp_length_faltante</span></code>, <code class="docutils literal notranslate"><span class="pre">consulta_faltante</span></code> y <code class="docutils literal notranslate"><span class="pre">buro_faltante</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Categóricas</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ANY</span></code>/<code class="docutils literal notranslate"><span class="pre">NONE</span></code>/<code class="docutils literal notranslate"><span class="pre">OTHER</span></code> unificadas; categorías con menos de 1 % en entrenamiento agrupadas (<code class="docutils literal notranslate"><span class="pre">purpose</span></code> → <code class="docutils literal notranslate"><span class="pre">other</span></code>, <code class="docutils literal notranslate"><span class="pre">addr_state</span></code> → <code class="docutils literal notranslate"><span class="pre">OTROS</span></code>); one-hot</p></td>
+</tr>
+<tr class="row-odd"><td><p>Desbalance</p></td>
+<td><p>partición y validación cruzada estratificadas; selección por AUC ROC; umbral de decisión optimizado con entrenamiento (índice de Youden, capítulos 6 y 7); sin sobremuestreo ni submuestreo, porque el enunciado exige el conjunto completo y el AUC no depende de la proporción de clases</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="04_valores_faltantes.html"
+       title="página anterior">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">anterior</p>
+        <p class="prev-next-title">4. Valores faltantes</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="05_preprocesamiento.html"
+       title="siguiente página">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">siguiente</p>
+        <p class="prev-next-title">5. Preprocesamiento</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contenido
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calidad-de-los-datos">Calidad de los datos</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variables-mas-prometedoras">Variables más prometedoras</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problemas-detectados">Problemas detectados</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decisiones-para-el-preprocesamiento">Decisiones para el preprocesamiento</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+Por Camilo Molina Guerrero
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
