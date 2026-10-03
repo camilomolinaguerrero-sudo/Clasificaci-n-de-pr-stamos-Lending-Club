@@ -1,0 +1,9 @@
+familia,comparación,ΔAUC,DeLong,McNemar,Bootstrap ΔAUC,Bootstrap ΔAUC-PR,Bootstrap ΔF1
+entre entornos,LogisticRegression (sklearn) vs LogisticRegression (spark),-0.0,no,sí,no,sí (no relevante),sí (no relevante)
+entre entornos,DecisionTree (sklearn) vs DecisionTree (spark),0.0027,sí (no relevante),sí,sí (no relevante),sí (no relevante),sí (no relevante)
+entre entornos,RandomForest (sklearn) vs RandomForest (spark),0.0015,sí (no relevante),sí,sí (no relevante),sí (no relevante),no
+entre entornos,GradientBoosting (sklearn) vs GradientBoosting (spark),0.0007,sí (no relevante),sí,sí (no relevante),sí (no relevante),no
+entre entornos,LinearSVC (sklearn) vs LinearSVC (spark),-0.1045,sí (relevante),sí,sí (relevante),sí (relevante),sí (relevante)
+entre entornos,NaiveBayes (sklearn) vs NaiveBayes (spark),0.0,no,no,no,no,no
+mejores modelos,GradientBoosting (sklearn) vs RandomForest (sklearn),0.0038,sí (no relevante),sí,sí (no relevante),sí (relevante),sí (no relevante)
+mejores modelos,GradientBoosting (spark) vs RandomForest (spark),0.0047,sí (no relevante),sí,sí (no relevante),sí (relevante),sí (no relevante)

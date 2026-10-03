@@ -1,0 +1,49 @@
+{
+  "modelo": "DecisionTree",
+  "entorno": "sklearn",
+  "mejores_parametros": {
+    "max_depth": 10
+  },
+  "t_cv_s": 13.25804328918457,
+  "t_reajuste_s": 6.745646953582764,
+  "iteraciones": null,
+  "max_iter": null,
+  "auc_cv": 0.702394156810732,
+  "auc_train": 0.7167043675762883,
+  "umbral_youden": 0.20028612303290416,
+  "youden_train": 0.31197342916968984,
+  "umbral_defecto": 0.5,
+  "t_entrenamiento_cv_s": 20.003690242767334,
+  "t_prediccion_s": 0.035655975341796875,
+  "t_umbral_s": 0.1193389892578125,
+  "t_evaluacion_s": 0.16775918006896973,
+  "n_combinaciones": 3,
+  "n_ajustes": 10,
+  "metricas_youden": {
+    "umbral": 0.20028612303290416,
+    "accuracy": 0.6402756553862587,
+    "precision": 0.311034180543383,
+    "recall": 0.6588630625278479,
+    "f1": 0.4225786478054821,
+    "auc_roc": 0.704147066269571,
+    "auc_pr": 0.36145382428156553,
+    "tn": 137137,
+    "fp": 78611,
+    "fn": 18375,
+    "tp": 35489
+  },
+  "metricas_defecto": {
+    "umbral": 0.5,
+    "accuracy": 0.8010325949883537,
+    "precision": 0.5129047395588925,
+    "recall": 0.08116738452398634,
+    "f1": 0.14015515804321343,
+    "auc_roc": 0.704147066269571,
+    "auc_pr": 0.36145382428156553,
+    "tn": 211596,
+    "fp": 4152,
+    "fn": 49492,
+    "tp": 4372
+  },
+  "fecha": "2026-10-01 16:22"
+}

@@ -1,0 +1,43 @@
+{
+  "numericas": [
+    "loan_amnt",
+    "term",
+    "int_rate",
+    "emp_length",
+    "annual_inc",
+    "dti",
+    "fico_range_high",
+    "delinq_2yrs",
+    "inq_last_6mths",
+    "open_acc",
+    "pub_rec",
+    "revol_util",
+    "mort_acc",
+    "pub_rec_bankruptcies",
+    "acc_open_past_24mths",
+    "num_actv_rev_tl",
+    "total_rev_hi_lim",
+    "avg_cur_bal",
+    "mths_since_recent_inq",
+    "antig_credito_meses"
+  ],
+  "categoricas": [
+    "purpose",
+    "home_ownership",
+    "addr_state",
+    "verification_status",
+    "application_type",
+    "initial_list_status"
+  ],
+  "log1p": [
+    "annual_inc",
+    "total_rev_hi_lim",
+    "avg_cur_bal"
+  ],
+  "indicadores": [
+    "hist_morosidad",
+    "emp_length_faltante",
+    "consulta_faltante",
+    "buro_faltante"
+  ]
+}

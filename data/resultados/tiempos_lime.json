@@ -1,0 +1,6 @@
+{
+  "sklearn|falso negativo": 0.03258919715881348,
+  "sklearn|falso positivo": 0.02147698402404785,
+  "spark|falso negativo": 1.8778538703918457,
+  "spark|falso positivo": 1.0867750644683838
+}

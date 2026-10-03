@@ -1,0 +1,5 @@
+{
+  "base_pandas_s": 2.1655192375183105,
+  "preproc_sklearn_s": 3.600609064102173,
+  "preproc_spark_s": 34.47524809837341
+}
