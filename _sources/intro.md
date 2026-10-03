@@ -1,7 +1,7 @@
 # Default en préstamos de Lending Club: scikit-learn frente a PySpark
 
 **Tarea 1 · Proyecto Integrador de Aprendizaje Automático** (sección 9.10 de las notas del curso)
-· Doctorado en Ingeniería · Camilo Molina Guerrero
+· Doctorado en Ingeniería · Camilo Molina Guerrero y Lina Margarita Buelvas
 
 ---
 
