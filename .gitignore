@@ -1,0 +1,14 @@
+# Datos pesados o reproducibles desde el CSV de Kaggle (ver README)
+data/raw/
+data/interim/
+data/processed/base_modelo.parquet
+data/modelos.nosync/
+data/prueba.nosync/
+# Construcción del libro (se publica en la rama gh-pages)
+book/_build/
+book/_prueba_*
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+.claude/
+data/resultados/log_*.txt

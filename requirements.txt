@@ -1,0 +1,21 @@
+# Python 3.11.16 | entorno: ~/.venvs/ml-lending | kernel Jupyter: ml-lending
+# Java 17 o superior para PySpark (probado con Oracle JDK 25.0.3) | R + pROC 1.19.1 (validación de DeLong)
+# Semilla aleatoria global: 42 (src/utils.py)
+pyspark==4.2.0
+py4j==0.10.9.9
+pandas==2.3.3
+numpy==2.4.6
+scipy==1.17.1
+scikit-learn==1.9.1
+statsmodels==0.15.0
+pyarrow==25.0.1
+matplotlib==3.11.2
+seaborn==0.13.2
+missingno==0.5.2
+lime==0.2.0.1
+joblib==1.6.0
+jupyter-book==1.0.4.post1
+ipykernel==7.4.0
+nbformat==5.11.1
+nbclient==0.11.0
+ghp-import==2.1.0
