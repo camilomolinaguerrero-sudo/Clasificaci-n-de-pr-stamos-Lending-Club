@@ -1,0 +1,42 @@
+# Configuración del Jupyter Book (versión 1.x, como en el tutorial del curso)
+title: "Default en préstamos de Lending Club: scikit-learn frente a PySpark"
+author: Camilo Molina Guerrero
+copyright: "2026"
+logo: ""
+only_build_toc_files: true
+exclude_patterns: ["_prueba_*"]
+
+# Los cuadernos se entregan ya ejecutados (el entrenamiento completo toma horas); el libro no los
+# vuelve a correr. Para re-ejecutar todo al construir: execute_notebooks: force
+execute:
+  execute_notebooks: "off"
+  timeout: -1
+
+sphinx:
+  config:
+    language: es
+    html_show_copyright: true
+    nb_merge_streams: true
+    mathjax3_config:
+      tex:
+        inlineMath: [["$", "$"], ["\\(", "\\)"]]
+
+parse:
+  myst_enable_extensions:
+    - dollarmath
+    - amsmath
+    - colon_fence
+    - linkify
+
+repository:
+  url: https://github.com/camilomolinaguerrero-sudo/Clasificaci-n-de-pr-stamos-Lending-Club
+  branch: main
+  path_to_book: book
+
+html:
+  use_repository_button: true
+  use_download_button: true
+  home_page_in_navbar: true
+
+launch_buttons:
+  notebook_interface: jupyterlab

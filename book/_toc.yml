@@ -1,0 +1,25 @@
+format: jb-book
+root: intro
+parts:
+  - caption: Análisis exploratorio
+    chapters:
+      - file: 01_carga_vision_general
+      - file: 02_eda_univariado
+      - file: 03_eda_bivariado
+      - file: 04_valores_faltantes
+      - file: 04b_resumen_eda
+  - caption: Preprocesamiento y modelado
+    chapters:
+      - file: 05_preprocesamiento
+      - file: 06_modelado_sklearn
+      - file: 07_modelado_pyspark
+  - caption: Evaluación y comparación
+    chapters:
+      - file: 08_comparacion_estadistica
+      - file: 09_lime
+      - file: 10_comparacion_resultados
+      - file: 11_experimentos
+  - caption: Discusión
+    chapters:
+      - file: 12_reflexion_critica
+      - file: 13_referencias
