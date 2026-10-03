@@ -1,6 +1,6 @@
 # Configuración del Jupyter Book (versión 1.x, como en el tutorial del curso)
 title: "Default en préstamos de Lending Club: scikit-learn frente a PySpark"
-author: Camilo Molina Guerrero
+author: Camilo Molina Guerrero y Lina Margarita Buelvas
 copyright: "2026"
 logo: ""
 only_build_toc_files: true

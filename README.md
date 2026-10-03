@@ -1,7 +1,7 @@
 # Clasificación de préstamos de Lending Club: scikit-learn frente a PySpark
 
 Tarea 1 (Proyecto Integrador de Aprendizaje Automático, sección 9.10 de las notas del curso de
-Machine Learning) · Doctorado en Ingeniería · Camilo Molina Guerrero
+Machine Learning) · Doctorado en Ingeniería · Camilo Molina Guerrero y Lina Margarita Buelvas
 
 Seis clasificadores (regresión logística, árbol de decisión, bosque aleatorio, gradient boosting,
 SVM lineal y Naive Bayes) predicen si un préstamo de Lending Club termina en default. Cada modelo
